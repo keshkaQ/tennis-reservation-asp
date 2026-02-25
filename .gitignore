@@ -1,0 +1,37 @@
+## .NET Core
+bin/
+obj/
+*.user
+*.suo
+*.userprefs
+*.backup.json
+
+## Visual Studio
+.vs/
+.vscode/
+*.swp
+*.sln.docstates
+
+## Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+build/
+[Bb]in/
+[Oo]bj/
+
+## NuGet Packages
+packages/
+*.nupkg
+project.lock.json
+project.assets.json
+*.nuget.props
+*.nuget.targets
+
+## Environment
+.env
+appsettings.Development.json
+
+## Logs
+Logs/
+*.log
