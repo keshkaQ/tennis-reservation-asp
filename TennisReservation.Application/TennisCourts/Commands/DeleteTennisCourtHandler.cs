@@ -1,6 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using Microsoft.Extensions.Logging;
-using TennisReservation.Contracts.TennisCourts.Queries;
+using TennisReservation.Contracts.TennisCourts.Commands;
 using TennisReservation.Domain.Models;
 
 namespace TennisReservation.Application.TennisCourts.Commands
@@ -14,27 +14,26 @@ namespace TennisReservation.Application.TennisCourts.Commands
             _tennisCourtsRepository = tennisCourtsRepository;
             _logger = logger;
         }
-        public async Task<Result> HandleAsync(DeleteTennisCourtByIdQuery query, CancellationToken cancellationToken)
+        public async Task<Result> HandleAsync(DeleteTennisCourtCommand command, CancellationToken cancellationToken)
         {
             try
             {
-                var existingTennisCourt = await _tennisCourtsRepository.GetByIdWithReservationsAsync(new TennisCourtId(query.Id), cancellationToken);
+                var existingTennisCourt = await _tennisCourtsRepository.GetByIdWithReservationsAsync(new TennisCourtId(command.Id), cancellationToken);
                 if (existingTennisCourt.IsFailure)
                 {
-                    _logger.LogWarning("Корт с ID {TennisCourtId} не найден", query.Id);
+                    _logger.LogWarning("Корт с ID {TennisCourtId} не найден", command.Id);
                     return Result.Failure("Корт не найден");
                 }
                 var tennisCourtToDelete = existingTennisCourt.Value;
 
-                if (tennisCourtToDelete.Reservations?.Any() == true)
-                {
-                    _logger.LogWarning("Невозможно удалить корт {TennisCourtId} - есть активные брони", query.Id);
-                    return Result.Failure("Невозможно удалить корт с существующими бронями");
-                }
+                var canDelete = tennisCourtToDelete.CanBeDeleted();
+                if (canDelete.IsFailure)
+                    return Result.Failure(canDelete.Error);
+
                 var deleteResult = await _tennisCourtsRepository.DeleteAsync(tennisCourtToDelete.Id, cancellationToken);
                 if (deleteResult.IsFailure)
                 {
-                    _logger.LogWarning("Ошибка при удалении корта {TennisCourtId}", query.Id);
+                    _logger.LogWarning("Ошибка при удалении корта {TennisCourtId}", command.Id);
                     return Result.Failure(deleteResult.Error);
                 }
                 _logger.LogInformation("Корт {TennisCourtId} успешно удален", tennisCourtToDelete.Id);
@@ -42,7 +41,7 @@ namespace TennisReservation.Application.TennisCourts.Commands
             }
             catch(Exception ex)
             {
-                _logger.LogError(ex, "Ошибка при удалении корта {TennisCourtId}", query.Id);
+                _logger.LogError(ex, "Ошибка при удалении корта {TennisCourtId}", command.Id);
                 return Result.Failure("Не удалось удалить корт");
             }
         }

@@ -1,6 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
 using Microsoft.Extensions.Logging;
-using TennisReservation.Contracts.Reservations.Queries;
+using TennisReservation.Contracts.Reservations.Command;
 
 namespace TennisReservation.Application.Reservations.Commands
 {
@@ -14,21 +14,21 @@ namespace TennisReservation.Application.Reservations.Commands
             _logger = logger;
         }
 
-        public async Task<Result> HandleAsync(DeleteReservationByIdQuery query, CancellationToken cancellationToken)
+        public async Task<Result> HandleAsync(DeleteReservationCommand command, CancellationToken cancellationToken)
         {
             try
             {
-                var existingReservation = await _reservationRepository.GetByIdAsync(new Domain.Models.ReservationId(query.Id),cancellationToken);
+                var existingReservation = await _reservationRepository.GetByIdAsync(new Domain.Models.ReservationId(command.Id),cancellationToken);
                 if(existingReservation.IsFailure)
                 {
-                    _logger.LogWarning("Бронирование с ID {ReservationId} не найдено", query.Id);
-                    return Result.Failure($"Бронирование с {query.Id} не найдено");
+                    _logger.LogWarning("Бронирование с ID {ReservationId} не найдено", command.Id);
+                    return Result.Failure($"Бронирование с {command.Id} не найдено");
                 }
                 var reservationToDelete = existingReservation.Value;
                 var deleteResult = await _reservationRepository.DeleteAsync(reservationToDelete.Id, cancellationToken);
                 if(deleteResult.IsFailure)
                 {
-                    _logger.LogWarning("Ошибка при удалении бронирования {ReservationId}", query.Id);
+                    _logger.LogWarning("Ошибка при удалении бронирования {ReservationId}", command.Id);
                     return Result.Failure(deleteResult.Error);
                 }
                 _logger.LogInformation("Бронирование {ReservationId} успешно удалено", reservationToDelete.Id);
@@ -36,7 +36,7 @@ namespace TennisReservation.Application.Reservations.Commands
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Ошибка при удалении бронирования {ReservationId}", query.Id);
+                _logger.LogError(ex, "Ошибка при удалении бронирования {ReservationId}", command.Id);
                 return Result.Failure("Не удалось удалить бронирование");
             }
         }

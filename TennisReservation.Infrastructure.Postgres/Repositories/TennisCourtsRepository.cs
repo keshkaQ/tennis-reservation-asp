@@ -6,117 +6,73 @@ using TennisReservation.Domain.Models;
 
 namespace TennisReservation.Infrastructure.Postgres.Repositories
 {
-    public class TennisCourtsRepository : ITennisCourtsRepository
+    public class TennisCourtsRepository : RepositoryBase<TennisCourt, TennisCourtId>, ITennisCourtsRepository
     {
-        private readonly ILogger<TennisCourtsRepository> _logger;
-        private readonly TennisReservationDbContext _dbContext;
-
         public TennisCourtsRepository(TennisReservationDbContext dbContext, ILogger<TennisCourtsRepository> logger)
+            : base(dbContext, logger) { }
+
+
+        public async Task<Result<TennisCourt>> CreateAsync(TennisCourt tennisCourt,CancellationToken cancellationToken = default)
         {
-            _dbContext = dbContext;
-            _logger = logger;
-        }
-        public async Task<Result<TennisCourt>> CreateAsync(TennisCourt tennisCourt, CancellationToken cancellationToken = default)
-        {
-            try
-            {
-                await using var transaction = await _dbContext.Database.BeginTransactionAsync(cancellationToken);
-                try
+            return await ExecuteAsync(
+                async (transaction) =>
                 {
-                    await _dbContext.TennisCourts.AddAsync(tennisCourt, cancellationToken);
+                    await _dbSet.AddAsync(tennisCourt, cancellationToken);
                     await _dbContext.SaveChangesAsync(cancellationToken);
-                    await transaction.CommitAsync(cancellationToken);
-                    _logger.LogInformation("Корт {TennisCourtId} сохранен в БД", tennisCourt.Id.Value);
-                    return Result.Success(tennisCourt);
-                }
-                catch
-                {
-                    await transaction.RollbackAsync(cancellationToken);
-                    throw;
-                }
-            }
-            catch (Exception ex) 
-            {
-                _logger.LogError(ex, "Ошибка при сохранении корта {TennisCourtId}", tennisCourt.Id.Value);
-                return Result.Failure<TennisCourt>("Не удалось сохранить корт в БД");
-            }
-           
+                    return tennisCourt;
+                },
+                successMessage: $"Корт {tennisCourt.Id.Value} сохранен в БД",
+                errorMessage: $"Не удалось сохранить корт {tennisCourt.Id.Value}",
+                cancellationToken: cancellationToken);
         }
 
-        public async Task<Result> DeleteAsync(TennisCourtId id, CancellationToken cancellationToken = default)
+        public async Task<Result> DeleteAsync(TennisCourtId id,CancellationToken cancellationToken = default)
         {
-            try
-            {
-                await using var transaction = await _dbContext.Database
-              .BeginTransactionAsync(cancellationToken);
-
-                try
+            return await ExecuteAsync(
+                async (transaction) =>
                 {
-                    var tennisCourt = await _dbContext.TennisCourts
-                        .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
+                    var tennisCourt = await _dbSet.FirstOrDefaultAsync(tc => tc.Id == id, cancellationToken);
 
                     if (tennisCourt == null)
-                        return Result.Failure($"Корт с ID {id.Value} не найден");
-                    _logger.LogInformation(
-                        "Удаление корта {TennisCourtId}", id.Value);
+                        throw new InvalidOperationException($"Корт с ID {id.Value} не найден");
 
-                    _dbContext.TennisCourts.Remove(tennisCourt);
-
+                    _dbSet.Remove(tennisCourt);
                     await _dbContext.SaveChangesAsync(cancellationToken);
-                    await transaction.CommitAsync(cancellationToken);
+                },
+                successMessage: $"Корт {id.Value} успешно удален",
+                errorMessage: $"Не удалось удалить корт {id.Value}",
+                cancellationToken: cancellationToken);
+        }
 
-                    _logger.LogInformation("Корт {TennisCourtId} успешно удален ", id.Value);
+        public async Task<Result<TennisCourt>> GetByIdAsync(TennisCourtId id,CancellationToken cancellationToken = default)
+        {
+            return await ExecuteQueryAsync(
+                async () => await _dbSet.FirstOrDefaultAsync(tc => tc.Id == id, cancellationToken),
+                errorMessage: $"Ошибка при получении корта {id.Value}",
+                cancellationToken: cancellationToken);
+        }
 
-                    return Result.Success();
-                }
-                catch
+        public async Task<Result<TennisCourt>> GetByIdWithReservationsAsync(TennisCourtId id,CancellationToken cancellationToken = default)
+        {
+            return await ExecuteQueryAsync(
+                async () => await _dbSet
+                    .Include(tc => tc.Reservations)
+                    .FirstOrDefaultAsync(tc => tc.Id == id, cancellationToken),
+                errorMessage: $"Ошибка при получении корта {id.Value} с бронированиями",
+                cancellationToken: cancellationToken);
+        }
+
+        public async Task<Result> UpdateAsync(TennisCourt tennisCourt,CancellationToken cancellationToken = default)
+        {
+            return await ExecuteAsync(
+                async (transaction) =>
                 {
-                    // Откатываем транзакцию в случае ошибки
-                    await transaction.RollbackAsync(cancellationToken);
-                    throw;
-                }
-            }
-            catch(Exception ex)
-            {
-                _logger.LogError(ex, "Не удалось удалить корт {TennisCourtId}", id.Value);
-                return Result.Failure("Не удалось удалить корт");
-            }
-           
-        }
-
-        public async Task<Result<TennisCourt>> GetByIdAsync(TennisCourtId id, CancellationToken cancellationToken)
-        {
-            var tennisCourt = await _dbContext.TennisCourts
-                .FirstOrDefaultAsync(tc => tc.Id == id, cancellationToken);
-            if (tennisCourt == null)
-                return Result.Failure<TennisCourt>($"Корт с {id} не найден");
-            return Result.Success(tennisCourt);
-        }
-
-        public async Task<Result<TennisCourt>> GetByIdWithReservationsAsync(TennisCourtId id, CancellationToken cancellationToken)
-        {
-            var tennisCourt = await _dbContext.TennisCourts
-                    .Include(tc => tc.Reservations)  
-                    .FirstOrDefaultAsync(tc => tc.Id == id, cancellationToken);
-            if (tennisCourt == null)
-                return Result.Failure<TennisCourt>($"Корт с {id} не найден");
-            return Result.Success(tennisCourt);
-        }
-
-        public async Task<Result> UpdateAsync(TennisCourt tennisCourt, CancellationToken cancellationToken = default)
-        {
-            try
-            {
-                _dbContext.TennisCourts.Update(tennisCourt);
-                await _dbContext.SaveChangesAsync(cancellationToken);
-                return Result.Success();
-            }
-            catch(Exception ex)
-            {
-                _logger.LogError(ex, "Не удалось обновить корт");
-
-                return Result.Failure<Guid>("Не удалось обновить корт");
-            }
+                    _dbSet.Update(tennisCourt);
+                    await _dbContext.SaveChangesAsync(cancellationToken);
+                },
+                successMessage: $"Корт {tennisCourt.Id.Value} обновлен",
+                errorMessage: $"Не удалось обновить корт {tennisCourt.Id.Value}",
+                cancellationToken: cancellationToken);
         }
     }
 }

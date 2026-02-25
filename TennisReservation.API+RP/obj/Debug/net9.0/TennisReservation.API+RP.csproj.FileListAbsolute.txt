@@ -469,3 +469,5 @@ C:\Users\TitanPC\source\repos\tennis-reservation-asp\TennisReservation.API+RP\ob
 C:\Users\TitanPC\source\repos\tennis-reservation-asp\TennisReservation.API+RP\obj\Debug\net9.0\TennisReservation.API+RP.pdb
 C:\Users\TitanPC\source\repos\tennis-reservation-asp\TennisReservation.API+RP\obj\Debug\net9.0\TennisReservation.API+RP.genruntimeconfig.cache
 C:\Users\TitanPC\source\repos\tennis-reservation-asp\TennisReservation.API+RP\obj\Debug\net9.0\ref\TennisReservation.API+RP.dll
+C:\Users\TitanPC\source\repos\tennis-reservation-asp\TennisReservation.API+RP\obj\Debug\net9.0\TennisReservation.API+RP.sourcelink.json
+C:\Users\TitanPC\source\repos\tennis-reservation-asp\TennisReservation.API+RP\obj\Debug\net9.0\staticwebassets.upToDateCheck.txt

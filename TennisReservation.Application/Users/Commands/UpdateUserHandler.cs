@@ -16,17 +16,15 @@ namespace TennisReservation.Application.Users.Commands
             _logger = logger;
         }
 
-        public async Task<Result<UserDto>> HandleAsync(Guid id,UpdateUserCommand command,CancellationToken cancellationToken)
+        public async Task<Result<UserDto>> HandleAsync(UpdateUserCommand command,CancellationToken cancellationToken)
         {
             try
             {
-                var existingUser = await _usersRepository.GetByIdAsync(
-                    new UserId(id),
-                    cancellationToken);
+                var existingUser = await _usersRepository.GetByIdAsync(new UserId(command.Id), cancellationToken);
               
                 if (existingUser.IsFailure)
                 {
-                    _logger.LogWarning("Пользователь с ID {UserId} не найден", id);
+                    _logger.LogWarning("Пользователь с ID {UserId} не найден", command.Id);
                     return Result.Failure<UserDto>("Пользователь не найден");
                 }
                 var userToUpdate = existingUser.Value;
@@ -40,10 +38,7 @@ namespace TennisReservation.Application.Users.Commands
 
                 if (updateResult.IsFailure)
                 {
-                    _logger.LogWarning(
-                        "Ошибка валидации при обновлении пользователя {UserId}: {Error}",
-                        id,
-                        updateResult.Error);
+                    _logger.LogWarning("Ошибка валидации при обновлении пользователя {UserId}: {Error}",command.Id,updateResult.Error);
                     return Result.Failure<UserDto>(updateResult.Error);
                 }
                 var saveResult = await _usersRepository.UpdateAsync(
@@ -52,9 +47,7 @@ namespace TennisReservation.Application.Users.Commands
 
                 if (saveResult.IsFailure)
                 {
-                    _logger.LogError(
-                        "Не удалось сохранить пользователя {UserId} в БД",
-                        id);
+                    _logger.LogError("Не удалось сохранить пользователя {UserId} в БД",command.Id);
                     return Result.Failure<UserDto>(saveResult.Error);
                 }
 
@@ -68,16 +61,14 @@ namespace TennisReservation.Application.Users.Commands
                     userToUpdate.Reservations?.Count ?? 0
                 );
 
-                _logger.LogInformation(
-                    "Пользователь {UserId} успешно обновлен",
-                    userToUpdate.Id.Value);
+                _logger.LogInformation("Пользователь {UserId} успешно обновлен",userToUpdate.Id.Value);
 
                 return Result.Success(dto);
 
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex,"Ошибка при обновлении пользователя {UserId}",id);
+                _logger.LogError(ex,"Ошибка при обновлении пользователя {UserId}",command.Id);
                 return Result.Failure<UserDto>("Не удалось обновить пользователя");
             }
         }

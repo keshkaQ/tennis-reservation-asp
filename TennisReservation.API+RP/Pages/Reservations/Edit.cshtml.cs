@@ -119,7 +119,7 @@ namespace TennisReservation.API_RP.Pages.Reservations
             )).ToList();
 
             var users = await _getAllUsersHandler.HandleAsync(CancellationToken.None);
-            Users = users.ToList();
+            Users = users.Value.ToList();
 
             // Для JavaScript
             var prices = TennisCourts.ToDictionary(c => c.Id.ToString(), c => c.HourlyRate);

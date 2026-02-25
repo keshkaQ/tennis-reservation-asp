@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
+using TennisReservation.Application.Users.Commands;
 using TennisReservation.Contracts.Users.Commands;
 
 namespace TennisReservation.API_RP.Pages.Users

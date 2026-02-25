@@ -2,8 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using TennisReservation.Application.TennisCourts.Commands;
 using TennisReservation.Application.TennisCourts.Queries;
+using TennisReservation.Contracts.TennisCourts.Commands;
 using TennisReservation.Contracts.TennisCourts.DTO;
-using TennisReservation.Contracts.TennisCourts.Queries;
 
 namespace TennisReservation.API_RP.Pages.TennisCourts
 {
@@ -44,7 +44,7 @@ namespace TennisReservation.API_RP.Pages.TennisCourts
             try
             {
                 var result = await _deleteTennisCourtHandler.HandleAsync(
-                    new DeleteTennisCourtByIdQuery(id),
+                    new DeleteTennisCourtCommand(id),
                     CancellationToken.None);
 
                 if (result.IsFailure)

@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using CSharpFunctionalExtensions;
+using Microsoft.EntityFrameworkCore;
 using TennisReservation.Application.Database;
 using TennisReservation.Contracts.Users.Dto;
 using TennisReservation.Contracts.Users.Queries;
@@ -12,7 +13,7 @@ namespace TennisReservation.Application.Users.Queries
         {
             _readDbContext = readDbContext;
         }
-        public async Task<UserDto?> Handle(GetUserByEmailQuery query, CancellationToken cancellationToken)
+        public async Task<Result<UserDto?>> HandleAsync(GetUserByEmailQuery query, CancellationToken cancellationToken)
         {
             return await _readDbContext.UsersRead
                 .Where(u => u.Email == query.Email)

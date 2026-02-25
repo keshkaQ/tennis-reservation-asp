@@ -18,20 +18,8 @@ namespace TennisReservation.Domain.Models
         }
 
         public TennisCourtId Id { get; }
-
-        [Required(ErrorMessage = "Название корта обязательно к заполнению")]
-        [MaxLength(100, ErrorMessage = "Название корта не может превышать 100 символов")]
-        [Display(Name = "Название корта")]
         public string Name { get; private set; }
-
-        [Required(ErrorMessage = "Стоимость за час обязательна к заполнению")]
-        [Range(1, 10000, ErrorMessage = "Стоимость за час должна быть в диапазоне от 1 до 10000")]
-        [Display(Name = "Стоимость корта за час")]
         public decimal HourlyRate { get; private set; }
-
-        [Required(ErrorMessage = "Описание обязательно к заполнению")]
-        [MaxLength(500, ErrorMessage = "Описание не может превышать 500 символов")]
-        [Display(Name = "Описание корта")]
         public string Description { get; private set; }
 
         private List<Reservation> _reservations;
@@ -67,6 +55,12 @@ namespace TennisReservation.Domain.Models
             Name = name;
             HourlyRate = hourlyRate;
             Description = description;
+            return Result.Success();
+        }
+        public Result CanBeDeleted()
+        {
+            if (_reservations.Any())
+                return Result.Failure("Невозможно удалить корт с существующими бронями");
             return Result.Success();
         }
 

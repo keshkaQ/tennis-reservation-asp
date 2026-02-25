@@ -5,7 +5,7 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TennisReservation.Domain", "TennisReservation.Domain\TennisReservation.Domain.csproj", "{E153D4DE-BE4A-46A6-9CF2-5BB8BF00C40B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TennisReservation.API+RP", "TennisReservation.API+RP\TennisReservation.API+RP.csproj", "{053A2342-AA75-448D-B6EB-5C4F134A0707}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TennisReservation.Presentation", "TennisReservation.API+RP\TennisReservation.Presentation.csproj", "{053A2342-AA75-448D-B6EB-5C4F134A0707}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TennisReservation.Application", "TennisReservation.Application\TennisReservation.Application.csproj", "{E3547FFF-EE0F-4783-BC28-5B276D990B01}"
 EndProject

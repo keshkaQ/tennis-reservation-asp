@@ -32,3 +32,4 @@ C:\Users\TitanPC\source\repos\tennis-reservation-asp\TennisReservation.Applicati
 C:\Users\TitanPC\source\repos\tennis-reservation-asp\TennisReservation.Application\obj\Debug\net9.0\refint\TennisReservation.Application.dll
 C:\Users\TitanPC\source\repos\tennis-reservation-asp\TennisReservation.Application\obj\Debug\net9.0\TennisReservation.Application.pdb
 C:\Users\TitanPC\source\repos\tennis-reservation-asp\TennisReservation.Application\obj\Debug\net9.0\ref\TennisReservation.Application.dll
+C:\Users\TitanPC\source\repos\tennis-reservation-asp\TennisReservation.Application\obj\Debug\net9.0\TennisReservation.Application.sourcelink.json

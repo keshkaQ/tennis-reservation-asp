@@ -2,95 +2,211 @@
 using TennisReservation.Application.Users.Commands;
 using TennisReservation.Application.Users.Queries;
 using TennisReservation.Contracts.Users.Commands;
-using TennisReservation.Contracts.Users.Dto;
 using TennisReservation.Contracts.Users.Queries;
-using TennisReservation.Contracts.Users.Requests;
 
 namespace TennisReservation.API_RP.Controllers
 {
+
     [Route("api/[controller]")]
     [ApiController]
     public class UsersController : ControllerBase
     {
+        private readonly ILogger<UsersController> _logger;
+
+        public UsersController(ILogger<UsersController> logger)
+        {
+            _logger = logger;
+        }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<UserDto>>> GetAllUsers(
+        public async Task<IActionResult> GetAllUsers(
             [FromServices] GetAllUsersHandler handler,
             CancellationToken cancellationToken)
         {
-            var users = await handler.HandleAsync(cancellationToken);
-            return Ok(users);
+            try
+            {
+                var result = await handler.HandleAsync(cancellationToken);
+                if (result.IsFailure)
+                {
+                    _logger.LogWarning("Ошибка при получении всех пользователей: {Error}", result.Error);
+                    return BadRequest(new { error = result.Error });
+                }
+
+                _logger.LogInformation("Получено {Count} пользователей", result.Value.Count);
+                return Ok(result.Value);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Критическая ошибка в GetAllUsers: {Message}", ex.Message);
+                return StatusCode(500, new { error = "Внутренняя ошибка сервера" });
+            }
         }
 
         [HttpGet("{userId:guid}")]
-        public async Task<ActionResult<UserDto>> GetUserById(
+        public async Task<IActionResult> GetUserById(
             [FromRoute] Guid userId,
             [FromServices] GetUserByIdHandler handler,
             CancellationToken cancellationToken)
         {
-            var user = await handler.Handle(new GetUserByIdQuery(userId), cancellationToken);
-            if (user == null)  
-                return NotFound($"Пользователь с ID {userId} не найден");
-            return Ok(user);
+            try
+            {
+                var result = await handler.HandleAsync(new GetUserByIdQuery(userId), cancellationToken);
+
+                if (result.IsFailure)
+                {
+                    if (result.Error.Contains("не найден"))
+                    {
+                        _logger.LogWarning("Пользователь {UserId} не найден", userId);
+                        return NotFound(new { error = result.Error });
+                    }
+
+                    _logger.LogWarning("Ошибка при получении пользователя {UserId}: {Error}", userId, result.Error);
+                    return BadRequest(new { error = result.Error });
+                }
+
+                _logger.LogInformation("Пользователь {UserId} успешно получен", userId);
+                return Ok(result.Value);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Критическая ошибка в GetUserById({UserId})", userId);
+                return StatusCode(500, new { error = "Внутренняя ошибка сервера" });
+            }
         }
 
         [HttpGet("by-email/{email}")]
-        public async Task<ActionResult<UserDto>> GetUserByEmail(
+        public async Task<IActionResult> GetUserByEmail(
             [FromRoute] string email,
             [FromServices] GetUserByEmailHandler handler,
             CancellationToken cancellationToken)
         {
-            var user = await handler.Handle(new GetUserByEmailQuery(email), cancellationToken);
-            if (user == null)
-                return NotFound($"Пользователь с email {email} не найден");
-            return Ok(user);
+            try
+            {
+                var result = await handler.HandleAsync(new GetUserByEmailQuery(email), cancellationToken);
+
+                if (result.IsFailure)
+                {
+                    if (result.Error.Contains("не найден"))
+                    {
+                        _logger.LogWarning("Пользователь с email {Email} не найден", email);
+                        return NotFound(new { error = result.Error });
+                    }
+
+                    _logger.LogWarning("Ошибка при получении пользователя по email {Email}: {Error}", email, result.Error);
+                    return BadRequest(new { error = result.Error });
+                }
+
+                _logger.LogInformation("Пользователь с email {Email} успешно получен", email);
+                return Ok(result.Value);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Критическая ошибка в GetUserByEmail({Email})", email);
+                return StatusCode(500, new { error = "Внутренняя ошибка сервера" });
+            }
         }
 
         [HttpGet("{userId:guid}/with-credentials")]
-        public async Task<ActionResult<UserWithCredentialsDto>> GetUserWithCredentials(
-            [FromRoute]Guid userId,
+        public async Task<IActionResult> GetUserWithCredentials(
+            [FromRoute] Guid userId,
             [FromServices] GetUserWithCredentialsHandler handler,
             CancellationToken cancellationToken)
         {
-            var user = await handler.Handle(new GetUserWithCredentialsByIdQuery(userId), cancellationToken);
-            if (user == null)
-                return NotFound($"Пользователь с userId {userId} не найден");
-            return Ok(user);
+            try
+            {
+                var result = await handler.HandleAsync(new GetUserWithCredentialsByIdQuery(userId), cancellationToken);
+
+                if (result.IsFailure)
+                {
+                    if (result.Error.Contains("не найден"))
+                    {
+                        _logger.LogWarning("Пользователь с учетными данными {UserId} не найден", userId);
+                        return NotFound(new { error = result.Error });
+                    }
+
+                    _logger.LogWarning("Ошибка при получении пользователя с учетными данными {UserId}: {Error}", userId, result.Error);
+                    return BadRequest(new { error = result.Error });
+                }
+
+                _logger.LogInformation("Пользователь с учетными данными {UserId} успешно получен", userId);
+                return Ok(result.Value);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, " Критическая ошибка в GetUserWithCredentials({UserId})", userId);
+                return StatusCode(500, new { error = "Внутренняя ошибка сервера" });
+            }
         }
 
-
         [HttpPost]
-        public async Task<ActionResult<UserDto>> CreateUser(
+        public async Task<IActionResult> CreateUser(
             [FromBody] CreateUserCommand request,
             [FromServices] CreateUserWithCredentialsHandler handler,
             CancellationToken cancellationToken)
         {
-            var user = await handler.HandleAsync(request, cancellationToken);
-            if (user.IsFailure)
-                return BadRequest("Не удалось создать пользователя");
-            return Ok(user.Value);
+            try
+            {
+                var result = await handler.HandleAsync(request, cancellationToken);
+
+                if (result.IsFailure)
+                {
+                    _logger.LogWarning("Ошибка при создании пользователя {Email}: {Error}", request.Email, result.Error);
+                    return BadRequest(new { error = result.Error });
+                }
+
+                _logger.LogInformation("Пользователь с email {Email} успешно создан, ID: {UserId}",
+                    request.Email, result.Value.UserId);
+
+                return CreatedAtAction(
+                    nameof(GetUserById),
+                    new { userId = result.Value.UserId },
+                    result.Value
+                );
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Критическая ошибка в CreateUser для email {Email}", request.Email);
+                return StatusCode(500, new { error = "Внутренняя ошибка сервера" });
+            }
         }
 
         [HttpPut("{id:guid}")]
-        public async Task<ActionResult<UserDto>> UpdateUser(
+        public async Task<IActionResult> UpdateUser(
             [FromRoute] Guid id,
-            [FromBody] UpdateUserRequest request,
+            [FromBody] UpdateUserCommand request,
             [FromServices] UpdateUserHandler handler,
             CancellationToken cancellationToken)
         {
-            var command = new UpdateUserCommand(
-                  FirstName: request.FirstName,
-                  LastName: request.LastName,
-                  Email: request.Email,
-                  PhoneNumber: request.PhoneNumber
-              );
+            try
+            {
+                if (id != request.Id)
+                {
+                    _logger.LogWarning("Несовпадающие ID: маршрут {RouteId} vs тело {BodyId}", id, request.Id);
+                    return BadRequest(new { error = "ID в маршруте не совпадает с ID в теле запроса" });
+                }
 
-            var result = await handler.HandleAsync(id,command, cancellationToken);
+                var result = await handler.HandleAsync(request, cancellationToken);
 
-            if (result.IsFailure)
-                return BadRequest(new { error = result.Error });
+                if (result.IsFailure)
+                {
+                    if (result.Error.Contains("не найден"))
+                    {
+                        _logger.LogWarning("Пользователь {UserId} не найден при обновлении", id);
+                        return NotFound(new { error = result.Error });
+                    }
 
-            return Ok(result.Value);
+                    _logger.LogWarning("Ошибка при обновлении пользователя {UserId}: {Error}", id, result.Error);
+                    return BadRequest(new { error = result.Error });
+                }
+
+                _logger.LogInformation("Пользователь {UserId} успешно обновлен", id);
+                return Ok(result.Value);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Критическая ошибка в UpdateUser({UserId})", id);
+                return StatusCode(500, new { error = "Внутренняя ошибка сервера" });
+            }
         }
 
         [HttpDelete("{id:guid}")]
@@ -99,132 +215,36 @@ namespace TennisReservation.API_RP.Controllers
             [FromServices] DeleteUserHandler handler,
             CancellationToken cancellationToken)
         {
-            var result = await handler.HandleAsync(new DeleteUserByIdQuery(id), cancellationToken);
-
-            if (result.IsFailure)
+            try
             {
-                return result.Error switch
+                var result = await handler.HandleAsync(new DeleteUserByIdCommand(id), cancellationToken);
+
+                if (result.IsFailure)
                 {
-                    var error when error.Contains("не найден") => NotFound(new { error }),
-                    var error when error.Contains("активными бронями") => Conflict(new { error }),
-                    _ => BadRequest(new { error = result.Error })
-                };
+                    if (result.Error.Contains("не найден"))
+                    {
+                        _logger.LogWarning("Пользователь {UserId} не найден при удалении", id);
+                        return NotFound(new { error = result.Error });
+                    }
+
+                    if (result.Error.Contains("активными бронями") || result.Error.Contains("в использовании"))
+                    {
+                        _logger.LogWarning("Конфликт при удалении пользователя {UserId}: {Error}", id, result.Error);
+                        return Conflict(new { error = result.Error });
+                    }
+
+                    _logger.LogWarning("Ошибка при удалении пользователя {UserId}: {Error}", id, result.Error);
+                    return BadRequest(new { error = result.Error });
+                }
+
+                _logger.LogInformation("Пользователь {UserId} успешно удален", id);
+                return NoContent();
             }
-
-            return NoContent(); 
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Критическая ошибка в DeleteUser({UserId})", id);
+                return StatusCode(500, new { error = "Внутренняя ошибка сервера" });
+            }
         }
-
-        ///// <summary>
-        ///// Сменить роль пользователя
-        ///// </summary>
-        //[HttpPatch("{id:guid}/role")]
-        //public async Task<IActionResult> ChangeUserRole(
-        //    Guid id,
-        //    [FromBody] UserRole newRole,
-        //    CancellationToken cancellationToken)
-        //{
-        //    var userResult = await _userRepository.GetByIdWithCredentialAsync(new UserId(id), cancellationToken);
-
-        //    if (userResult.IsFailure)
-        //        return NotFound(userResult.Error);
-
-        //    var credentials = userResult.Value.Credentials;
-        //    if (credentials == null)
-        //        return BadRequest("У пользователя нет учетных данных");
-
-        //    var updateResult = await _credentialsRepository.UpdateRoleAsync(credentials.Id, newRole, cancellationToken);
-
-        //    if (updateResult.IsFailure)
-        //        return BadRequest(updateResult.Error);
-
-        //    return NoContent();
-        //}
-
-        ///// <summary>
-        ///// Заблокировать пользователя
-        ///// </summary>
-        //[HttpPost("{id:guid}/lock")]
-        //public async Task<IActionResult> LockUser(
-        //    Guid id,
-        //    [FromBody] LockUserRequest request,
-        //    CancellationToken cancellationToken)
-        //{
-        //    var userResult = await _userRepository.GetByIdWithCredentialAsync(new UserId(id), cancellationToken);
-
-        //    if (userResult.IsFailure)
-        //        return NotFound(userResult.Error);
-
-        //    var credentials = userResult.Value.Credentials;
-        //    if (credentials == null)
-        //        return BadRequest("У пользователя нет учетных данных");
-
-        //    var lockUntil = DateTime.UtcNow.AddMinutes(request.LockMinutes);
-        //    var result = await _credentialsRepository.LockUntilAsync(credentials.Id, lockUntil, cancellationToken);
-
-        //    if (result.IsFailure)
-        //        return BadRequest(result.Error);
-
-        //    return Ok(new { lockedUntil = lockUntil });
-        //}
-
-        ///// <summary>
-        ///// Разблокировать пользователя
-        ///// </summary>
-        //[HttpPost("{id:guid}/unlock")]
-        //public async Task<IActionResult> UnlockUser(
-        //    Guid id,
-        //    CancellationToken cancellationToken)
-        //{
-        //    var userResult = await _userRepository.GetByIdWithCredentialAsync(new UserId(id), cancellationToken);
-
-        //    if (userResult.IsFailure)
-        //        return NotFound(userResult.Error);
-
-        //    var credentials = userResult.Value.Credentials;
-        //    if (credentials == null)
-        //        return BadRequest("У пользователя нет учетных данных");
-
-        //    var result = await _credentialsRepository.ResetLockoutAsync(credentials.Id, cancellationToken);
-
-        //    if (result.IsFailure)
-        //        return BadRequest(result.Error);
-
-        //    return Ok();
-        //}
-
-        ///// <summary>
-        ///// Получить статистику пользователя
-        ///// </summary>
-        //[HttpGet("{id:guid}/stats")]
-        //public async Task<ActionResult<UserStatsDto>> GetUserStats(
-        //    Guid id,
-        //    CancellationToken cancellationToken)
-        //{
-        //    var userResult = await _userRepository.GetByIdWithCredentialAsync(new UserId(id), cancellationToken);
-
-        //    if (userResult.IsFailure)
-        //        return NotFound(userResult.Error);
-
-        //    var user = userResult.Value;
-        //    var stats = new UserStatsDto
-        //    {
-        //        UserId = user.Id.Value,
-        //        Email = user.Email,
-        //        FirstName = user.FirstName,
-        //        LastName = user.LastName,
-        //        PhoneNumber = user.PhoneNumber,
-        //        RegistrationDate = user.RegistrationDate,
-        //        ReservationsCount = user.Reservations.Count,
-        //        IsActive = user.Credentials?.CanLogin ?? false,
-        //        LastLoginAt = user.Credentials?.LastLoginAt,
-        //        FailedLoginAttempts = user.Credentials?.FailedLoginAttempts ?? 0,
-        //        IsLocked = user.Credentials?.IsLocked() ?? false,
-        //        LockedUntil = user.Credentials?.LockedUntil,
-        //        Role = user.Credentials?.Role ?? UserRole.User
-        //    };
-
-        //    return Ok(stats);
-        //}
     }
-   
 }

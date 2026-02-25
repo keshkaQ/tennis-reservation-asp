@@ -78,7 +78,7 @@
   },
   {
     "ContainingType": "TennisReservation.API_RP.Controllers.ReservationController",
-    "Method": "DeleteTennisCourt",
+    "Method": "DeleteReservation",
     "RelativePath": "api/Reservation/{id}",
     "HttpMethod": "DELETE",
     "IsController": true,
@@ -245,17 +245,7 @@
     "IsController": true,
     "Order": 0,
     "Parameters": [],
-    "ReturnTypes": [
-      {
-        "Type": "System.Collections.Generic.IEnumerable\u00601[[TennisReservation.Contracts.Users.Dto.UserDto, TennisReservation.Contracts, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
+    "ReturnTypes": []
   },
   {
     "ContainingType": "TennisReservation.API_RP.Controllers.UsersController",
@@ -271,17 +261,7 @@
         "IsRequired": true
       }
     ],
-    "ReturnTypes": [
-      {
-        "Type": "TennisReservation.Contracts.Users.Dto.UserDto",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
+    "ReturnTypes": []
   },
   {
     "ContainingType": "TennisReservation.API_RP.Controllers.UsersController",
@@ -298,21 +278,11 @@
       },
       {
         "Name": "request",
-        "Type": "TennisReservation.Contracts.Users.Requests.UpdateUserRequest",
+        "Type": "TennisReservation.Contracts.Users.Commands.UpdateUserCommand",
         "IsRequired": true
       }
     ],
-    "ReturnTypes": [
-      {
-        "Type": "TennisReservation.Contracts.Users.Dto.UserDto",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
+    "ReturnTypes": []
   },
   {
     "ContainingType": "TennisReservation.API_RP.Controllers.UsersController",
@@ -344,17 +314,7 @@
         "IsRequired": true
       }
     ],
-    "ReturnTypes": [
-      {
-        "Type": "TennisReservation.Contracts.Users.Dto.UserDto",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
+    "ReturnTypes": []
   },
   {
     "ContainingType": "TennisReservation.API_RP.Controllers.UsersController",
@@ -370,17 +330,7 @@
         "IsRequired": true
       }
     ],
-    "ReturnTypes": [
-      {
-        "Type": "UserWithCredentialsDto",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
+    "ReturnTypes": []
   },
   {
     "ContainingType": "TennisReservation.API_RP.Controllers.UsersController",
@@ -396,16 +346,6 @@
         "IsRequired": true
       }
     ],
-    "ReturnTypes": [
-      {
-        "Type": "TennisReservation.Contracts.Users.Dto.UserDto",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ]
+    "ReturnTypes": []
   }
 ]

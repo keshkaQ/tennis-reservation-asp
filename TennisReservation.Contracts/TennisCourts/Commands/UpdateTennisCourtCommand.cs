@@ -1,9 +1,4 @@
 ﻿namespace TennisReservation.Contracts.TennisCourts.Commands
 {
-    public record UpdateTennisCourtCommand
-    (
-    string Name, 
-    decimal HourlyRate, 
-    string Description
-    );
+    public record UpdateTennisCourtCommand(Guid Id, string Name, decimal HourlyRate, string Description);
 }

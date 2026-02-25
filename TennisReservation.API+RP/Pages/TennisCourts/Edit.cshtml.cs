@@ -32,9 +32,10 @@ namespace TennisReservation.API_RP.Pages.TennisCourts
             if(tennisCourtToUpdate == null)
                 return NotFound();
             Command = new UpdateTennisCourtCommand(
-                Name: tennisCourtToUpdate.Name,
-                HourlyRate: tennisCourtToUpdate.HourlyRate,
-                Description: tennisCourtToUpdate.Description
+                tennisCourtToUpdate.Id,
+                tennisCourtToUpdate.Name,
+                tennisCourtToUpdate.HourlyRate,
+                tennisCourtToUpdate.Description
             );
 
             return Page();
@@ -47,7 +48,7 @@ namespace TennisReservation.API_RP.Pages.TennisCourts
             }
             try
             {
-                var result = await _updateTennisCourtHandler.HandleAsync(id,Command, CancellationToken.None);
+                var result = await _updateTennisCourtHandler.HandleAsync(Command, CancellationToken.None);
                 if (result.IsFailure)
                 {
                     ModelState.AddModelError(string.Empty, result.Error);

@@ -4984,9 +4984,9 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\TitanPC\\source\\repos\\tennis-reservation-asp\\TennisReservation.API+RP\\TennisReservation.API+RP.csproj",
-      "projectName": "TennisReservation.API+RP",
-      "projectPath": "C:\\Users\\TitanPC\\source\\repos\\tennis-reservation-asp\\TennisReservation.API+RP\\TennisReservation.API+RP.csproj",
+      "projectUniqueName": "C:\\Users\\TitanPC\\source\\repos\\tennis-reservation-asp\\TennisReservation.API+RP\\TennisReservation.Presentation.csproj",
+      "projectName": "TennisReservation.Presentation",
+      "projectPath": "C:\\Users\\TitanPC\\source\\repos\\tennis-reservation-asp\\TennisReservation.API+RP\\TennisReservation.Presentation.csproj",
       "packagesPath": "C:\\Users\\TitanPC\\.nuget\\packages\\",
       "outputPath": "C:\\Users\\TitanPC\\source\\repos\\tennis-reservation-asp\\TennisReservation.API+RP\\obj\\",
       "projectStyle": "PackageReference",

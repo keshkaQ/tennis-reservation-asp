@@ -1,8 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using Serilog;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using TennisReservation.Application.Database;
+using TennisReservation.Application.Interfaces;
 using TennisReservation.Application.Reservations;
 using TennisReservation.Application.Reservations.Commands;
 using TennisReservation.Application.Reservations.Queries;
@@ -17,9 +19,10 @@ using TennisReservation.Infrastructure.Postgres;
 using TennisReservation.Infrastructure.Postgres.Extensions;
 using TennisReservation.Infrastructure.Postgres.Repositories;
 using TennisReservation.Infrastructure.Postgres.Seeding;
+using TennisReservation.Infrastructure.Postgres.Services;
 
 var builder = WebApplication.CreateBuilder(args);
-//builder.Host.UseSerilog();
+builder.Host.UseSerilog();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -42,18 +45,18 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // логгер
-//Log.Logger = new LoggerConfiguration()
-//    .MinimumLevel.Information()
-//    .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning)
-//    .MinimumLevel.Override("Microsoft.EntityFrameworkCore", Serilog.Events.LogEventLevel.Information)
-//    .WriteTo.Console() 
-//    .WriteTo.File(
-//        path: "Logs/log-.txt",
-//        rollingInterval: RollingInterval.Day,
-//        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}",
-//        restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Information
-//    )
-//    .CreateLogger();
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Information()
+    .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning)
+    .MinimumLevel.Override("Microsoft.EntityFrameworkCore", Serilog.Events.LogEventLevel.Information)
+    .WriteTo.Console()
+    .WriteTo.File(
+        path: "Logs/log-.txt",
+        rollingInterval: RollingInterval.Day,
+        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {Message:lj}{NewLine}{Exception}",
+        restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Information
+    )
+    .CreateLogger();
 
 // База данных для записей и чтения
 builder.Services.AddDbContext<TennisReservationDbContext>(options =>
@@ -72,6 +75,7 @@ builder.Services.AddScoped<IUsersRepository, UsersRepository>();
 builder.Services.AddScoped<IUserCredentialsRepository, UsersCredentialsRepository>();
 builder.Services.AddScoped<ITennisCourtsRepository, TennisCourtsRepository>();
 builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
+builder.Services.AddScoped<IPasswordHasher, BcryptPasswordHasher>();
 
 // Регистрация фич юзера
 builder.Services.AddScoped<GetAllUsersHandler>();
@@ -107,18 +111,47 @@ var app = builder.Build();
 if (args.Contains("--seed"))
 {
     Console.WriteLine("Запущено заполнение");
-    await app.Services.RunSeeding();
-    Console.WriteLine("Заполнение завершено");
+    try
+    {
+        await app.Services.RunSeeding();
+        Console.WriteLine("Заполнение завершено успешно");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Ошибка при заполнении: {ex.Message}");
+        throw;
+    }
     return;
 }
 
 if (args.Contains("--reset-db"))
 {
-    Console.WriteLine("Удаляем базу данных");
-    await app.Services.EnsureDatabaseDeletedAsync();
-    Console.WriteLine("База данных удалена успешно");
+    try
+    {
+        await app.Services.EnsureDatabaseDeletedAsync();
+        Console.WriteLine("База данных удалена успешно");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Ошибка при удалении: {ex.Message}");
+        throw;
+    }
     return;
 }
+
+
+// Заполняем бд при старте
+try
+{
+    await app.Services.InitializeDatabaseAsync();
+}
+catch (Exception ex)
+{
+    var logger = app.Services.GetRequiredService<ILogger<Program>>();
+    logger.LogCritical(ex, "Произошла ошибка при инициализации базы");
+    throw;
+}
+
 
 // Middleware
 if (app.Environment.IsDevelopment())
@@ -135,19 +168,6 @@ else
     app.UseExceptionHandler("/Error");
     app.UseHsts();
 }
-
-// Заполняем бд при старте
-try
-{
-    await app.Services.InitializeDatabaseAsync();
-}
-catch (Exception ex)
-{
-    var logger = app.Services.GetRequiredService<ILogger<Program>>();
-    logger.LogCritical(ex, "Произошла ошибка при инициализации базы");
-    throw;
-}
-
 app.UseHttpsRedirection();
 app.UseRouting();
 app.UseAuthorization();
@@ -159,12 +179,9 @@ app.MapRazorPages().WithStaticAssets();
 app.Run();
 
 
-// RP для бронирований
+// RP проверить
 // страничка для UserCredentials
 // авторизация, страницы входа и регистрации
 // создание JWT,  JWT метод для получения токена
 
-
-// ПОТОМ:
-// лишние методы ГЕТ в репозитории мне зачем, если у меня есть фичи
-// по интерфейсу: сделать главную страницу, логин, регистрация в верхнем пункте меню, есть окно для просмотра кортов и их расписания
+// по интерфейсу: сделать главную страницу, на ней есть окно для просмотра кортов и их расписания, окно для бронирования

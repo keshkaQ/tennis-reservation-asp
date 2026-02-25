@@ -2,8 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using TennisReservation.Application.Users.Commands;
 using TennisReservation.Application.Users.Queries;
+using TennisReservation.Contracts.Users.Commands;
 using TennisReservation.Contracts.Users.Dto;
-using TennisReservation.Contracts.Users.Queries;
 
 namespace TennisReservation.API_RP.Pages.Users
 {
@@ -31,7 +31,7 @@ namespace TennisReservation.API_RP.Pages.Users
             try
             {
                 var users = await _getAllUsersHandler.HandleAsync(CancellationToken.None);
-                Users = users ?? new List<UserDto>();
+                Users = users.Value ?? new List<UserDto>();
 
                 _logger.LogDebug("Загружено {Count} пользователей", Users.Count());
             }
@@ -47,7 +47,7 @@ namespace TennisReservation.API_RP.Pages.Users
             try
             {
                 var result = await _deleteUserHandler.HandleAsync(
-                    new DeleteUserByIdQuery(id),
+                    new DeleteUserByIdCommand(id),
                     CancellationToken.None);
 
                 if (result.IsFailure)

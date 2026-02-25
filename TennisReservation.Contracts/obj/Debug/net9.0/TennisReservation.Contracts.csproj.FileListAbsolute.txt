@@ -28,3 +28,4 @@ C:\Users\TitanPC\source\repos\tennis-reservation-asp\TennisReservation.Contracts
 C:\Users\TitanPC\source\repos\tennis-reservation-asp\TennisReservation.Contracts\obj\Debug\net9.0\refint\TennisReservation.Contracts.dll
 C:\Users\TitanPC\source\repos\tennis-reservation-asp\TennisReservation.Contracts\obj\Debug\net9.0\TennisReservation.Contracts.pdb
 C:\Users\TitanPC\source\repos\tennis-reservation-asp\TennisReservation.Contracts\obj\Debug\net9.0\ref\TennisReservation.Contracts.dll
+C:\Users\TitanPC\source\repos\tennis-reservation-asp\TennisReservation.Contracts\obj\Debug\net9.0\TennisReservation.Contracts.sourcelink.json

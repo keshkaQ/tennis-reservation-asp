@@ -1,6 +1,7 @@
 ﻿using TennisReservation.Application.Database;
 using TennisReservation.Contracts.Users.Dto;
 using Microsoft.EntityFrameworkCore;
+using CSharpFunctionalExtensions;
 
 namespace TennisReservation.Application.Users.Queries
 {
@@ -11,7 +12,7 @@ namespace TennisReservation.Application.Users.Queries
         {
             _readDbContext = readDbContext;
         }
-        public async Task<IEnumerable<UserDto>> HandleAsync(CancellationToken cancellationToken)
+        public async Task<Result<List<UserDto>>> HandleAsync(CancellationToken cancellationToken)
         {
             return await _readDbContext.UsersRead
                 .Select(user => new UserDto(

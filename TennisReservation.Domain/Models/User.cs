@@ -27,27 +27,9 @@ namespace TennisReservation.Domain.Models
         }
 
         public UserId Id { get; }
-
-        [Required(ErrorMessage = "Имя обязательно к заполнению")]
-        [MaxLength(50, ErrorMessage = "Имя не может превышать 50 символов")]
-        [Display(Name = "Имя")]
         public string FirstName { get; private set; }
-
-        [Required(ErrorMessage = "Фамилия обязательна к заполнению")]
-        [MaxLength(50, ErrorMessage = "Фамилия не может превышать 50 символов")]
-        [Display(Name = "Фамилия")]
         public string LastName { get; private set; }
-
-        [Required(ErrorMessage = "Почта обязательна к заполнению")]
-        [EmailAddress(ErrorMessage = "Введите корректный адрес")]
-        [MaxLength(255, ErrorMessage = "Почта не может превышать 255 символов")]
-        [Display(Name = "Почта")]
         public string Email { get; private set; }
-
-        [Required(ErrorMessage = "Номер телефона обязателен к заполнению")]
-        [Phone(ErrorMessage = "Введите корректный номер телефона")]
-        [MaxLength(20, ErrorMessage = "Номер телефона не может превышать 20 символов")]
-        [Display(Name = "Номер телефона")]
         public string PhoneNumber { get; private set; }
         public DateTime RegistrationDate { get; }
         private List<Reservation> _reservations;
@@ -63,7 +45,6 @@ namespace TennisReservation.Domain.Models
             email = email?.Trim().ToLower() ?? "";
             phoneNumber = phoneNumber?.Trim() ?? "";
 
-            // Используем общие методы валидации
             var validationResult = ValidateNames(firstName, lastName)
                 .Bind(() => ValidateEmail(email))
                 .Bind(() => ValidatePhoneNumber(phoneNumber));

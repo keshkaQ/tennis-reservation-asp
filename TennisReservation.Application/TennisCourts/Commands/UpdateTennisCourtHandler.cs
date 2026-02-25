@@ -16,35 +16,32 @@ namespace TennisReservation.Application.TennisCourts.Commands
             _logger = logger;
         }
 
-        public async Task<Result<TennisCourtDto>> HandleAsync(Guid id,UpdateTennisCourtCommand request, CancellationToken cancellationToken)
+        public async Task<Result<TennisCourtDto>> HandleAsync(UpdateTennisCourtCommand command, CancellationToken cancellationToken)
         {
             try
             {
-                var existingCourt = await _tennisCourtsRepository.GetByIdWithReservationsAsync(new TennisCourtId(id), cancellationToken);
+                var existingCourt = await _tennisCourtsRepository.GetByIdWithReservationsAsync(new TennisCourtId(command.Id), cancellationToken);
                 if (existingCourt.IsFailure)
                 {
-                    _logger.LogWarning("Корт с ID {TennisCourtId} не найден", id);
+                    _logger.LogWarning("Корт с ID {TennisCourtId} не найден", command.Id);
                     return Result.Failure<TennisCourtDto>("Корт не найден");
                 }
                 var tennisCourtToUpdate = existingCourt.Value;
 
                 var updateResult = tennisCourtToUpdate.Update(
-                    request.Name,
-                    request.HourlyRate,
-                    request.Description);
+                    command.Name,
+                    command.HourlyRate,
+                    command.Description);
 
                 if (updateResult.IsFailure)
                 {
-                    _logger.LogWarning(
-                        "Ошибка валидации при обновлении корта {TennisCourtId}: {Error}", id, updateResult.Error);
+                    _logger.LogWarning("Ошибка валидации при обновлении корта {TennisCourtId}: {Error}", command.Id, updateResult.Error);
                     return Result.Failure<TennisCourtDto>(updateResult.Error);
                 }
                 var saveResult = await _tennisCourtsRepository.UpdateAsync(tennisCourtToUpdate, cancellationToken);
                 if (saveResult.IsFailure)
                 {
-                    _logger.LogError(
-                        "Не удалось сохранить корт {TennisCourtId} в БД",
-                        id);
+                    _logger.LogError("Не удалось сохранить корт {TennisCourtId} в БД",command.Id);
                     return Result.Failure<TennisCourtDto>(saveResult.Error);
                 }
                 var dto = new TennisCourtDto(
@@ -54,15 +51,13 @@ namespace TennisReservation.Application.TennisCourts.Commands
                     tennisCourtToUpdate.Description
                     );
 
-                _logger.LogInformation(
-               "Корт {TennisCourtId} успешно обновлен",
-               tennisCourtToUpdate.Id.Value);
+                _logger.LogInformation("Корт {TennisCourtId} успешно обновлен",tennisCourtToUpdate.Id.Value);
 
                 return Result.Success(dto);
             }
             catch(Exception ex)
             {
-                _logger.LogError(ex, "Ошибка при обновлении корта {TennisCourtId}", id);
+                _logger.LogError(ex, "Ошибка при обновлении корта {TennisCourtId}", command.Id);
                 return Result.Failure<TennisCourtDto>("Не удалось обновить корт");
             }
         }

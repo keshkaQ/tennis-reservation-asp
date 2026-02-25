@@ -11,7 +11,6 @@ namespace TennisReservation.Domain.Models
     {
         private Reservation() { }
 
-        // Приватный конструктор с TotalCost
         private Reservation(ReservationId id, UserId userId, TennisCourtId courtId,
             DateTime startTime, DateTime endTime, decimal totalCost, ReservationStatus status, DateTime createdAt)
         {
@@ -26,44 +25,16 @@ namespace TennisReservation.Domain.Models
         }
 
         public ReservationId Id { get; }
-
-        [Required(ErrorMessage = "Теннисный корт обязателен к заполнению")]
-        [DisplayName("Теннисный корт")]
         public TennisCourtId TennisCourtId { get; private set; }
-
-        [Required(ErrorMessage = "Клиент обязателен к заполнению")]
-        [DisplayName("Клиент")]
         public UserId UserId { get; private set; }
-
-        [Required]
-        [DataType(DataType.DateTime)]
-        [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd HH:mm}", ApplyFormatInEditMode = true)]
-        [DisplayName("Дата и время начала игры")]
         public DateTime StartTime { get; private set; }
-
-        [Required]
-        [DataType(DataType.DateTime)]
-        [DisplayFormat(DataFormatString = "{0:yyyy-MM-dd HH:mm}", ApplyFormatInEditMode = true)]
-        [DisplayName("Дата и время конца игры")]
         public DateTime EndTime { get; private set; }
-
-        [Required]
-        [Range(0, double.MaxValue, ErrorMessage = "Стоимость должна быть больше нуля")]
-        [DisplayName("Стоимость игры")]
         public decimal TotalCost { get; private set; }
-
-        [Required]
-        [Display(Name = "Статус игры")]
         public ReservationStatus Status { get; private set; }
-
         public DateTime CreatedAt { get; private set; }
-
-        [ValidateNever]
         public virtual User User { get; private set; } = null!;
-        [ValidateNever]
         public virtual TennisCourt TennisCourt { get; private set; } = null!;
 
-        // Внутренний метод с TotalCost (для использования в handler)
         public static Result<Reservation> Create(
             TennisCourtId tennisCourtId,
             UserId userId,

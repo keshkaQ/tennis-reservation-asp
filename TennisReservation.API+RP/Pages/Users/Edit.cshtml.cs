@@ -25,11 +25,14 @@ namespace TennisReservation.API_RP.Pages.Users
 
         public async Task<IActionResult> OnGetAsync(Guid id)
         {
-            var userToUpdate = await _getUserByIdHandler.Handle(new GetUserByIdQuery(id), CancellationToken.None);
-            if (userToUpdate == null)
+            var userToUpdateResult = await _getUserByIdHandler.HandleAsync(new GetUserByIdQuery(id), CancellationToken.None);
+            if (userToUpdateResult.IsFailure)
                 return NotFound();
 
+            var userToUpdate = userToUpdateResult.Value;
+
             Command = new UpdateUserCommand(
+                userToUpdate.UserId,
                 userToUpdate.FirstName,
                 userToUpdate.LastName,
                 userToUpdate.Email,
@@ -47,7 +50,7 @@ namespace TennisReservation.API_RP.Pages.Users
             }
             try
             {
-                var result = await _updateUserHandler.HandleAsync(id,Command, CancellationToken.None);
+                var result = await _updateUserHandler.HandleAsync(Command, CancellationToken.None);
                 if (result.IsFailure)
                 {
                     ModelState.AddModelError(string.Empty, result.Error);

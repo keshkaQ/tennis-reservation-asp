@@ -11,36 +11,91 @@ namespace TennisReservation.API_RP.Controllers
     [ApiController]
     public class TennisCourtsController : ControllerBase
     {
+        private readonly ILogger<TennisCourtsController> _logger;
+
+        public TennisCourtsController(ILogger<TennisCourtsController> logger)
+        {
+            _logger = logger;
+        }
+
         [HttpGet]
         public async Task<ActionResult<IEnumerable<TennisCourtDto>>> GetAllTennisCourts(
-            [FromServices] GetAllTennisCourtsHandler handler, CancellationToken cancellationToken)
+            [FromServices] GetAllTennisCourtsHandler handler,
+            CancellationToken cancellationToken)
         {
-            var tennisCourts = await handler.HandleAsync(cancellationToken);
-            return Ok(tennisCourts);
+            try
+            {
+                var tennisCourts = await handler.HandleAsync(cancellationToken);
+                _logger.LogInformation(" Получено {Count} кортов", tennisCourts.Count());
+                return Ok(tennisCourts);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, " Ошибка при получении всех кортов");
+                return StatusCode(500, new { error = "Внутренняя ошибка сервера" });
+            }
         }
 
         [HttpGet("{tennisCourtId:guid}")]
         public async Task<ActionResult<TennisCourtDto>> GetTennisCourtById(
-        [FromRoute] Guid tennisCourtId,
-        [FromServices] GetTennisCourtByIdHandler handler,
-        CancellationToken cancellationToken)
+            [FromRoute] Guid tennisCourtId,
+            [FromServices] GetTennisCourtByIdHandler handler,
+            CancellationToken cancellationToken)
         {
-            var tennisCourt = await handler.HandleAsync(new GetTennisCourtByIdQuery(tennisCourtId), cancellationToken);
-            if (tennisCourt == null)
-                return NotFound($"Корт с ID {tennisCourtId} не найден");
-            return Ok(tennisCourt);
+            try
+            {
+                var result = await handler.HandleAsync(
+                    new GetTennisCourtByIdQuery(tennisCourtId),
+                    cancellationToken);
+
+                if (result == null)
+                {
+                    _logger.LogWarning("Корт {TennisCourtId} не найден", tennisCourtId);
+                    return NotFound(new { error = $"Корт с ID {tennisCourtId} не найден" });
+                }
+
+                _logger.LogInformation("Корт {TennisCourtId} успешно получен", tennisCourtId);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, " Ошибка при получении корта {TennisCourtId}", tennisCourtId);
+                return StatusCode(500, new { error = "Внутренняя ошибка сервера" });
+            }
         }
 
         [HttpPost]
         public async Task<ActionResult<TennisCourtDto>> CreateTennisCourt(
-           [FromBody] CreateTennisCourtCommand request,
-           [FromServices] CreateTennisCourtHandler handler,
-           CancellationToken cancellationToken)
+            [FromBody] CreateTennisCourtCommand request,
+            [FromServices] CreateTennisCourtHandler handler,
+            CancellationToken cancellationToken)
         {
-            var tennisCourt = await handler.HandleAsync(request, cancellationToken);
-            if (tennisCourt.IsFailure)
-                return BadRequest("Не удалось создать корт");
-            return Ok(tennisCourt.Value);
+            try
+            {
+                var result = await handler.HandleAsync(request, cancellationToken);
+
+                if (result.IsFailure)
+                {
+                    _logger.LogWarning("Ошибка при создании корта: {Error}", result.Error);
+                    return BadRequest(new { error = result.Error });
+                }
+
+                _logger.LogInformation(
+                    "Корт создан: ID {CourtId}, Название {Name}",
+                    result.Value.Id,
+                    request.Name);
+
+                return CreatedAtAction(
+                    nameof(GetTennisCourtById),
+                    new { tennisCourtId = result.Value.Id },
+                    result.Value
+                );
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при создании корта {Name}", request.Name);
+                return StatusCode(500, new { error = "Внутренняя ошибка сервера" });
+            }
         }
 
         [HttpPut("{id:guid}")]
@@ -50,31 +105,78 @@ namespace TennisReservation.API_RP.Controllers
             [FromServices] UpdateTennisCourtHandler handler,
             CancellationToken cancellationToken)
         {
-            var result = await handler.HandleAsync(id,request, cancellationToken);
-            if(result.IsFailure)
-                return BadRequest(new { error = result.Error });
-            return Ok(result.Value);
+            try
+            {
+                if (id != request.Id)
+                {
+                    _logger.LogWarning(
+                        "Несовпадающие ID при обновлении корта: маршрут {RouteId} и тело {BodyId}",
+                        id, request.Id);
+                    return BadRequest(new { error = "ID в маршруте не совпадает с ID корта" });
+                }
+
+                var result = await handler.HandleAsync(request, cancellationToken);
+
+                if (result.IsFailure)
+                {
+                    if (result.Error.Contains("не найден"))
+                    {
+                        _logger.LogWarning("Корт {CourtId} не найден при обновлении", id);
+                        return NotFound(new { error = result.Error });
+                    }
+
+                    _logger.LogWarning("Ошибка при обновлении корта {CourtId}: {Error}", id, result.Error);
+                    return BadRequest(new { error = result.Error });
+                }
+
+                _logger.LogInformation("Корт {CourtId} успешно обновлен", id);
+                return Ok(result.Value);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при обновлении корта {CourtId}", id);
+                return StatusCode(500, new { error = "Внутренняя ошибка сервера" });
+            }
         }
 
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> DeleteTennisCourt(
-           [FromRoute] Guid id,
-           [FromServices] DeleteTennisCourtHandler handler,
-           CancellationToken cancellationToken)
+            [FromRoute] Guid id,
+            [FromServices] DeleteTennisCourtHandler handler,
+            CancellationToken cancellationToken)
         {
-            var result = await handler.HandleAsync(new DeleteTennisCourtByIdQuery(id), cancellationToken);
-
-            if (result.IsFailure)
+            try
             {
-                return result.Error switch
-                {
-                    var error when error.Contains("не найден") => NotFound(new { error }),
-                    var error when error.Contains("активными бронями") => Conflict(new { error }),
-                    _ => BadRequest(new { error = result.Error })
-                };
-            }
+                var result = await handler.HandleAsync(
+                    new DeleteTennisCourtCommand(id),
+                    cancellationToken);
 
-            return NoContent();
+                if (result.IsFailure)
+                {
+                    if (result.Error.Contains("не найден"))
+                    {
+                        _logger.LogWarning("Корт {CourtId} не найден при удалении", id);
+                        return NotFound(new { error = result.Error });
+                    }
+
+                    if (result.Error.Contains("активными бронями"))
+                    {
+                        _logger.LogWarning("Конфликт при удалении корта {CourtId}: {Error}", id, result.Error);
+                        return Conflict(new { error = result.Error });
+                    }
+
+                    _logger.LogWarning("Ошибка при удалении корта {CourtId}: {Error}", id, result.Error);
+                    return BadRequest(new { error = result.Error });
+                }
+
+                _logger.LogInformation("Корт {CourtId} успешно удален", id);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при удалении корта {CourtId}", id);
+                return StatusCode(500, new { error = "Внутренняя ошибка сервера" });
+            }
         }
     }
 }

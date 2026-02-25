@@ -40,3 +40,4 @@ C:\Users\TitanPC\source\repos\tennis-reservation-asp\TennisReservation.Infrastru
 C:\Users\TitanPC\source\repos\tennis-reservation-asp\TennisReservation.Infrastructure.Postgres\obj\Debug\net9.0\TennisReservation.Infrastructure.Postgres.pdb
 C:\Users\TitanPC\source\repos\tennis-reservation-asp\TennisReservation.Infrastructure.Postgres\obj\Debug\net9.0\TennisReservation.Infrastructure.Postgres.genruntimeconfig.cache
 C:\Users\TitanPC\source\repos\tennis-reservation-asp\TennisReservation.Infrastructure.Postgres\obj\Debug\net9.0\ref\TennisReservation.Infrastructure.Postgres.dll
+C:\Users\TitanPC\source\repos\tennis-reservation-asp\TennisReservation.Infrastructure.Postgres\obj\Debug\net9.0\TennisReservation.Infrastructure.Postgres.sourcelink.json

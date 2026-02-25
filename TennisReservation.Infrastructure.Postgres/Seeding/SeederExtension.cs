@@ -8,7 +8,7 @@ namespace TennisReservation.Infrastructure.Postgres.Seeding
         {
             using var scope = services.CreateScope();
             var seeders = scope.ServiceProvider.GetServices<ISeeder>();
-            foreach ( var seeder in seeders)
+            foreach (var seeder in seeders)
             {
                 await seeder.SeedAsync();
             }

@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using CSharpFunctionalExtensions;
+using Microsoft.EntityFrameworkCore;
 using TennisReservation.Application.Database;
 using TennisReservation.Contracts.Users.Queries;
 using TennisReservation.Domain.Enums;
@@ -13,7 +14,7 @@ namespace TennisReservation.Application.Users.Queries
         {
             _readDbContext = readDbContext;
         }
-        public async Task<UserWithCredentialsDto?> Handle(GetUserWithCredentialsByIdQuery query, CancellationToken cancellationToken)
+        public async Task<Result<UserWithCredentialsDto?>> HandleAsync(GetUserWithCredentialsByIdQuery query, CancellationToken cancellationToken)
         {
             return await _readDbContext.UsersRead
                  .Where(user => user.Id == new UserId(query.Id))
@@ -32,8 +33,8 @@ namespace TennisReservation.Application.Users.Queries
                      u.Credentials != null ? u.Credentials.Role : UserRole.User,
                      u.Credentials != null ? u.Credentials.LastLoginAt : null,
                      u.Credentials != null ? u.Credentials.FailedLoginAttempts : 0,
-                     u.Credentials != null ? u.Credentials.IsLocked() : false,
-                      u.Credentials != null ? u.Credentials.LockedUntil : null
+                     u.Credentials != null ? u.Credentials != null && u.Credentials.LockedUntil.HasValue && u.Credentials.LockedUntil.Value > DateTime.UtcNow : false,
+                     u.Credentials != null ? u.Credentials.LockedUntil : null
                  )).FirstOrDefaultAsync(cancellationToken);
         }
     }

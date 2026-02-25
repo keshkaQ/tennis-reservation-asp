@@ -16,7 +16,7 @@ namespace TennisReservation.Application.Users
 
         // Write-методы - с default 
         Task<Result<User>> CreateWithCredentialsAsync(User user, CancellationToken cancellationToken = default);
-        Task<Result<Guid>> UpdateAsync(User user, CancellationToken cancellationToken = default);
+        Task<Result> UpdateAsync(User user, CancellationToken cancellationToken = default);
         Task<Result> DeleteWithCredentialsAsync(UserId id, CancellationToken cancellationToken = default);
     }
 }

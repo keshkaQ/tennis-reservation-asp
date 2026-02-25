@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using CSharpFunctionalExtensions;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
@@ -8,7 +9,6 @@ using TennisReservation.Application.Users.Queries;
 using TennisReservation.Contracts.Reservations.Command;
 using TennisReservation.Contracts.TennisCourts.DTO;
 using TennisReservation.Contracts.Users.Dto;
-using TennisReservation.Domain.Models;
 
 namespace TennisReservation.API_RP.Pages.Reservations
 {
@@ -52,7 +52,7 @@ namespace TennisReservation.API_RP.Pages.Reservations
             )).ToList();
 
             var users = await _getAllUsersHandler.HandleAsync(CancellationToken.None);
-            Users = users.Select (u => new UserDto(
+            Users = users.Value.Select(u => new UserDto(
                 u.UserId,
                 u.FirstName,
                 u.LastName,
