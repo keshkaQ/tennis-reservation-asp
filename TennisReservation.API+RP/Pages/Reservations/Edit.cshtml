@@ -1,0 +1,171 @@
+﻿@page "{id}"
+@using TennisReservation.Domain.Enums
+@model TennisReservation.API_RP.Pages.Reservations.EditModel
+@{
+    ViewData["Title"] = "Редактировать бронирование";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-edit me-2"></i>
+                        Редактировать бронирование
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert">
+                    </div>
+
+                    <form method="post">
+                        <input type="hidden" asp-for="Command.Id" />
+
+                        <!-- Выбор корта -->
+                        <div class="mb-3">
+                            <label asp-for="Command.TennisCourtId" class="form-label fw-bold">
+                                <i class="fas fa-map-pin me-1"></i>Выберите корт
+                                <span class="text-danger">*</span>
+                            </label>
+                            <select asp-for="Command.TennisCourtId" class="form-select" id="courtSelect">
+                                <option value="">-- Выберите корт --</option>
+                                @foreach (var court in Model.TennisCourts)
+                                {
+                                    <option value="@court.Id">@court.Name - @court.HourlyRate ₽/час</option>
+                                }
+                            </select>
+                            <span asp-validation-for="Command.TennisCourtId" class="text-danger"></span>
+                        </div>
+
+                        <!-- Выбор клиента -->
+                        <div class="mb-3">
+                            <label asp-for="Command.UserId" class="form-label fw-bold">
+                                <i class="fas fa-user me-1"></i>Выберите клиента
+                                <span class="text-danger">*</span>
+                            </label>
+                            <select asp-for="Command.UserId" class="form-select" id="userSelect">
+                                <option value="">-- Выберите клиента --</option>
+                                @foreach (var user in Model.Users)
+                                {
+                                    <option value="@user.UserId">@user.LastName @user.FirstName</option>
+                                }
+                            </select>
+                            <span asp-validation-for="Command.UserId" class="text-danger"></span>
+                        </div>
+
+                        <!-- Время начала -->
+                        <div class="mb-3">
+                            <label asp-for="Command.StartTime" class="form-label fw-bold">
+                                <i class="fas fa-clock me-1"></i>Время начала
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Command.StartTime" class="form-control" type="datetime-local" id="startTime"
+                                   value="@Model.Command.StartTime.ToString("yyyy-MM-ddTHH:mm")" />
+                            <span asp-validation-for="Command.StartTime" class="text-danger"></span>
+                            <small class="form-text text-muted">Введите дату и время начала игры</small>
+                        </div>
+
+                        <!-- Время окончания -->
+                        <div class="mb-3">
+                            <label asp-for="Command.EndTime" class="form-label fw-bold">
+                                <i class="fas fa-clock me-1"></i>Время окончания
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Command.EndTime" class="form-control" type="datetime-local" id="endTime"
+                                   value="@Model.Command.EndTime.ToString("yyyy-MM-ddTHH:mm")" />
+                            <span asp-validation-for="Command.EndTime" class="text-danger"></span>
+                            <small class="form-text text-muted">Введите дату и время окончания игры</small>
+                        </div>
+
+
+
+                        <!-- Предполагаемая стоимость -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-ruble-sign me-1"></i>Предполагаемая стоимость
+                            </label>
+                            <div class="alert alert-info" id="costDisplay">
+                                Выберите корт и укажите время для расчета
+                            </div>
+                            <small class="form-text text-muted">
+                                * Окончательная стоимость будет рассчитана при сохранении
+                            </small>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-page="./Index" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-1"></i> Назад к списку
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i> Сохранить изменения
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const courtPrices = @Html.Raw(Model.CourtPricesJson);
+
+        function calculateCost() {
+            const courtId = document.getElementById('courtSelect').value;
+            const startTime = document.getElementById('startTime').value;
+            const endTime = document.getElementById('endTime').value;
+            const costDisplay = document.getElementById('costDisplay');
+
+            if (!courtId || !startTime || !endTime) {
+                costDisplay.textContent = 'Выберите корт и укажите время для расчета';
+                costDisplay.className = 'alert alert-info';
+                return;
+            }
+
+            const pricePerHour = courtPrices[courtId];
+            if (!pricePerHour) {
+                costDisplay.textContent = 'Цена для выбранного корта не найдена';
+                costDisplay.className = 'alert alert-warning';
+                return;
+            }
+
+            const start = new Date(startTime);
+            const end = new Date(endTime);
+
+            if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+                costDisplay.textContent = 'Некорректный формат даты';
+                costDisplay.className = 'alert alert-danger';
+                return;
+            }
+
+            if (end <= start) {
+                costDisplay.textContent = 'Время окончания должно быть позже времени начала';
+                costDisplay.className = 'alert alert-danger';
+                return;
+            }
+
+            const hours = (end - start) / (1000 * 60 * 60);
+            const cost = hours * pricePerHour;
+
+            costDisplay.innerHTML = `
+                <strong>${cost.toFixed(2)} ₽</strong><br>
+                <small>${hours.toFixed(1)} ч × ${pricePerHour} ₽/ч</small>
+            `;
+            costDisplay.className = 'alert alert-success';
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const courtSelect = document.getElementById('courtSelect');
+            const startTime = document.getElementById('startTime');
+            const endTime = document.getElementById('endTime');
+            
+            if (courtSelect) courtSelect.addEventListener('change', calculateCost);
+            if (startTime) startTime.addEventListener('change', calculateCost);
+            if (endTime) endTime.addEventListener('change', calculateCost);
+            
+            calculateCost();
+        });
+    </script>
+}

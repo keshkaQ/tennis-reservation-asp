@@ -1,0 +1,81 @@
+﻿@page
+@model TennisReservation.API_RP.Pages.Users.CreateModel
+@{
+    ViewData["Title"] = "Добавить клиента";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user-plus me-2"></i>
+                        Добавить нового клиента
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                    <form method="post">
+                        <div class="mb-3">
+                            <label asp-for="Command.FirstName" class="form-label">
+                                @Html.DisplayNameFor(model => model.Command.FirstName)
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Command.FirstName" class="form-control" />
+                            <span asp-validation-for="Command.FirstName" class="text-danger"></span>
+                        </div>
+                      
+
+                        <div class="mb-3">
+                            <label asp-for="Command.LastName" class="form-label">
+                                @Html.DisplayNameFor(model => model.Command.LastName)
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Command.LastName" class="form-control" />
+                            <span asp-validation-for="Command.LastName" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Command.Email" class="form-label">
+                                @Html.DisplayNameFor(model => model.Command.Email)
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Command.Email" class="form-control" type="email" />
+                            <span asp-validation-for="Command.Email" class="text-danger"></span>
+                        </div>
+
+
+                        <div class="mb-3">
+                            <label asp-for="Command.PhoneNumber" class="form-label">
+                                @Html.DisplayNameFor(model => model.Command.PhoneNumber)
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Command.PhoneNumber" class="form-control" />
+                            <span asp-validation-for="Command.PhoneNumber" class="text-danger"></span>
+                        </div>
+
+                          <div class="mb-3">
+                            <label asp-for="Command.Password" class="form-label">
+                                @Html.DisplayNameFor(model => model.Command.Password)
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Command.Password" class="form-control" />
+                            <span asp-validation-for="Command.Password" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-page="./Index" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-1"></i> Назад к списку
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i> Сохранить клиента
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

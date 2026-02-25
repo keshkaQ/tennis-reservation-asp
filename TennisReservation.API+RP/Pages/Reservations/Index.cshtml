@@ -1,0 +1,166 @@
+﻿@page
+@using TennisReservation.Domain.Enums
+@model TennisReservation.API_RP.Pages.Reservations.IndexModel
+@{
+    ViewData["Title"] = "Бронирования";
+}
+
+<div class="container mt-4">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>
+            <i class="fas fa-calendar-alt me-2"></i>
+            Бронирования
+        </h1>
+        <div>
+            <a asp-page="/Index" class="btn btn-outline-secondary me-2">
+                <i class="fas fa-home me-1"></i> На главную
+            </a>
+            <a asp-page="./Create" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i> Новое бронирование
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <h5>Список бронирований</h5>
+        </div>
+        <div class="card-body p-0">
+            <div>
+                <table class="table table-hover table-striped mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Клиент</th>
+                            <th>Корт</th>
+                            <th>Начало</th>
+                            <th>Окончание</th>
+                            <th>Стоимость</th>
+                            <th>Статус</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var reservation in Model.Reservations)
+                        {
+                            <tr>
+                                <td>@reservation.User?.FirstName @reservation.User?.LastName</td>
+                                <td>@reservation.TennisCourt?.Name</td>
+                                <td>@reservation.StartTime.ToString("dd.MM.yyyy HH:mm")</td>
+                                <td>@reservation.EndTime.ToString("dd.MM.yyyy HH:mm")</td>
+                                <td>@reservation.TotalCost.ToString("N0") ₽</td>
+                                <td>
+                                    <span class="badge @GetStatusBadgeClass(reservation.Status)">
+                                        @GetStatusText(reservation.Status)
+                                    </span>
+                                </td>
+                                <td>
+                                    <a asp-page="./Edit" asp-route-id="@reservation.Id.Value" 
+                                    class="btn btn-sm btn-outline-primary me-1">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button"
+                                        class="btn btn-sm btn-outline-danger"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#deleteModal-@reservation.Id.Value">
+                                     <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <div class="modal fade"
+                                 id="deleteModal-@reservation.Id.Value"
+                                 data-bs-backdrop="static"
+                                 data-bs-keyboard="false"
+                                 tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Подтверждение удаления</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p>Вы действительно хотите удалить бронирование?</p>
+                                            <p class="fw-bold">Клиент: @reservation.User.FirstName @reservation.User.LastName</p>
+                                            <p class="fw-bold">Дата начала: @reservation.StartTime.ToString("dd.MM.yyyy HH:mm") <br /> Дата окончания: @reservation.EndTime.ToString("dd.MM.yyyy HH:mm")</p>
+                                            <p class="text-muted">Стоимость: @reservation.TotalCost</p>
+                                            <p class="text-danger">Это действие нельзя отменить!</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                Отмена
+                                            </button>
+
+                                            <form method="post" asp-page-handler="Delete" asp-route-id="@reservation.Id.Value">
+                                                <button type="submit" class="btn btn-danger">
+                                                    <i class="fas fa-trash me-1"></i> Удалить
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (!Model.Reservations.Any())
+            {
+                <div class="text-center py-5">
+                    <h5 class="text-muted">Бронирования не найдены</h5>
+                    <a asp-page="./Create" class="btn btn-warning mt-2">
+                        <i class="fas fa-plus me-1"></i> Создать первое бронирование
+                    </a>
+                </div>
+            }
+        </div>
+        <div class="card-footer text-muted d-flex justify-content-between">
+            <div>
+                Всего бронирований: <strong>@Model.Reservations.Count</strong>
+            </div>
+            <div>
+                Общая сумма: <strong>@Model.Reservations.Sum(b => b.TotalCost).ToString("N0") ₽</strong>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetStatusBadgeClass(ReservationStatus status)
+    {
+        return status switch
+        {
+            ReservationStatus.Booked => "bg-primary",
+            ReservationStatus.Active => "bg-success",
+            ReservationStatus.Completed => "bg-secondary",
+            ReservationStatus.Cancelled => "bg-danger",
+            _ => "bg-light text-dark"
+        };
+    }
+
+    string GetStatusText(ReservationStatus status)
+    {
+        return status switch
+        {
+            ReservationStatus.Booked => "Забронировано",
+            ReservationStatus.Active => "Активно",
+            ReservationStatus.Completed => "Завершено",
+            ReservationStatus.Cancelled => "Отменено",
+            _ => status.ToString()
+        };
+    }
+}
