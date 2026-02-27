@@ -5,6 +5,7 @@ using TennisReservation.Application.Users.Commands;
 using TennisReservation.Application.Users.Queries;
 using TennisReservation.Contracts.Users.Commands;
 using TennisReservation.Contracts.Users.Queries;
+using TennisReservation.Presentation.Pages.Users.ViewModels;
 
 namespace TennisReservation.Presentation.Pages.Users
 {
@@ -21,7 +22,7 @@ namespace TennisReservation.Presentation.Pages.Users
         }
 
         [BindProperty]
-        public UpdateUserCommand Command { get; set; }
+        public EditUserViewModel ViewModel { get; set; } = new();
 
         public async Task<IActionResult> OnGetAsync(Guid id)
         {
@@ -31,33 +32,41 @@ namespace TennisReservation.Presentation.Pages.Users
 
             var userToUpdate = userToUpdateResult.Value;
 
-            Command = new UpdateUserCommand(
-                userToUpdate.UserId,
-                userToUpdate.FirstName,
-                userToUpdate.LastName,
-                userToUpdate.Email,
-                userToUpdate.PhoneNumber
-            );
+            ViewModel.Id = userToUpdate.UserId;
+            ViewModel.FirstName = userToUpdate.FirstName;
+            ViewModel.LastName = userToUpdate.LastName;
+            ViewModel.Email = userToUpdate.Email;
+            ViewModel.PhoneNumber = userToUpdate.PhoneNumber;
 
             return Page();
         }
 
         public async Task<IActionResult> OnPostAsync(Guid id)
         {
+            if(id != ViewModel.Id)
+            {
+                return BadRequest("ID в маршруте не совпадает с ID модели");
+            }
             if (!ModelState.IsValid)
             {
                 return Page();
             }
             try
             {
-                var result = await _updateUserHandler.HandleAsync(Command, CancellationToken.None);
+                var command = new UpdateUserCommand(
+                    ViewModel.Id,
+                    ViewModel.FirstName,
+                    ViewModel.LastName,
+                    ViewModel.Email,
+                    ViewModel.PhoneNumber);
+                var result = await _updateUserHandler.HandleAsync(command, CancellationToken.None);
                 if (result.IsFailure)
                 {
                     ModelState.AddModelError(string.Empty, result.Error);
                     return Page();
                 }
 
-                TempData["SuccessMessage"] = $"Клиент {Command.FirstName} {Command.LastName} успешно обновлен";
+                TempData["SuccessMessage"] = $"Клиент {command.FirstName} {command.LastName} успешно обновлен";
                 return RedirectToPage("./Index");
             }
             catch (DbUpdateException ex)

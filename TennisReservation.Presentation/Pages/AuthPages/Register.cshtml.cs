@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using System.ComponentModel.DataAnnotations;
 using TennisReservation.Application.Auth;
 using TennisReservation.Contracts.Users.Commands;
+using TennisReservation.Presentation.Pages.AuthPages.ViewModels;
 
 namespace TennisReservation.Presentation.Pages.AuthPages
 {
@@ -10,6 +10,7 @@ namespace TennisReservation.Presentation.Pages.AuthPages
     {
         private readonly UserService _userService;
         private readonly ILogger<RegisterModel> _logger;
+
         public RegisterModel(UserService userService, ILogger<RegisterModel> logger)
         {
             _userService = userService;
@@ -18,64 +19,54 @@ namespace TennisReservation.Presentation.Pages.AuthPages
 
         [BindProperty]
         public RegisterInputModel Input { get; set; }
-
+        public bool ShowRegistrationError { get; set; }
+        public string? RegistrationErrorMessage { get; set; }
         public async Task<IActionResult> OnGetAsync() => Page();
 
         public async Task<IActionResult> OnPostAsync()
         {
+            ShowRegistrationError = false;
+            RegistrationErrorMessage = null;
+
             if (!ModelState.IsValid)
             {
                 return Page();
             }
-            var result = await _userService.Register(new CreateUserCommand(
-                Input.FirstName,
-                Input.LastName,
-                Input.Email,
-                Input.PhoneNumber,
-                Input.Password
-                ),CancellationToken.None);
-            if (result.IsFailure)
+
+            try
             {
-                ModelState.AddModelError(string.Empty, result.Error);
+                var result = await _userService.Register(new CreateUserCommand(
+                    Input.FirstName,
+                    Input.LastName,
+                    Input.Email,
+                    Input.PhoneNumber,
+                    Input.Password
+                ), CancellationToken.None);
+
+                if (result.IsFailure)
+                {
+                    _logger.LogWarning("Регистрация пользователя {Email} не удалась: {Error}",
+                        Input.Email, result.Error);
+                    ShowRegistrationError = true;
+                    RegistrationErrorMessage = result.Error;
+                    Input.Password = string.Empty;
+                    Input.ConfirmPassword = string.Empty;
+
+                    return Page();
+                }
+
+                _logger.LogInformation("Пользователь {Email} успешно зарегистрирован", Input.Email);
+                TempData["SuccessMessage"] = "Регистрация прошла успешно! Теперь вы можете войти.";
+                return RedirectToPage("/AuthPages/Login");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Критическая ошибка при регистрации пользователя {Email}", Input.Email);
+                ShowRegistrationError = true;
+                RegistrationErrorMessage = "Произошла внутренняя ошибка сервера. Пожалуйста, попробуйте позже.";
+
                 return Page();
             }
-
-            return RedirectToPage("/AuthPages/Login");
         }
-    }
-
-    public class RegisterInputModel
-    {
-        [Required(ErrorMessage = "Имя обязательно")]
-        [StringLength(50, MinimumLength = 2, ErrorMessage = "Имя должно быть от 2 до 50 символов")]
-        [Display(Name = "Имя")]
-        public string FirstName { get; set; }
-
-        [Required(ErrorMessage = "Фамилия обязательна")]
-        [StringLength(50, MinimumLength = 2, ErrorMessage = "Фамилия должна быть от 2 до 50 символов")]
-        [Display(Name = "Фамилия")]
-        public string LastName { get; set; }
-
-        [Required(ErrorMessage = "Email обязателен")]
-        [EmailAddress(ErrorMessage = "Введите корректный email")]
-        [Display(Name = "Email")]
-        public string Email { get; set; }
-
-        [Required(ErrorMessage = "Телефон обязателен")]
-        [Phone(ErrorMessage = "Введите корректный телефон")]
-        [Display(Name = "Телефон")]
-        public string PhoneNumber { get; set; }
-
-        [Required(ErrorMessage = "Пароль обязателен")]
-        [StringLength(100, MinimumLength = 6, ErrorMessage = "Пароль должен быть от 6 до 100 символов")]
-        [DataType(DataType.Password)]
-        [Display(Name = "Пароль")]
-        public string Password { get; set; }
-
-        [Required(ErrorMessage = "Подтвердите пароль")]
-        [DataType(DataType.Password)]
-        [Compare("Password", ErrorMessage = "Пароли не совпадают")]
-        [Display(Name = "Подтверждение пароля")]
-        public string ConfirmPassword { get; set; }
     }
 }

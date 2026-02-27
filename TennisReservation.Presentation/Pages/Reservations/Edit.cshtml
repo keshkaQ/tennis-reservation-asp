@@ -23,60 +23,60 @@
                       <form method="post">
            
                         <div class="mb-3">
-                            <label asp-for="Command.TennisCourtId" class="form-label fw-bold">
-                                @Html.DisplayNameFor(model => model.Command.TennisCourtId)
+                            <label asp-for="ViewModel.TennisCourtId" class="form-label fw-bold">
+                                @Html.DisplayNameFor(model => model.ViewModel.TennisCourtId)
                                 <span class="text-danger">*</span>
                             </label>
-                            <select asp-for="Command.TennisCourtId" class="form-select" id="courtSelect">
+                            <select asp-for="ViewModel.TennisCourtId" class="form-select" id="courtSelect">
                                 <option value="">-- Выберите корт --</option>
                                 @foreach (var court in Model.TennisCourts)
                                 {
                                     <option value="@court.Id">@court.Name - @court.HourlyRate ₽/час</option>
                                 }
                             </select>
-                            <span asp-validation-for="Command.TennisCourtId" class="text-danger"></span>
+                            <span asp-validation-for="ViewModel.TennisCourtId" class="text-danger"></span>
                         </div>
 
                    
                         <div class="mb-3">
-                            <label asp-for="Command.UserId" class="form-label fw-bold">
+                            <label asp-for="ViewModel.UserId" class="form-label fw-bold">
                                 <i class="fas fa-user me-1"></i>
-                                  @Html.DisplayNameFor(model => model.Command.UserId)
+                                @Html.DisplayNameFor(model => model.ViewModel.UserId)
                                 <span class="text-danger">*</span>
                             </label>
-                            <select asp-for="Command.UserId" class="form-select" id="userSelect">
+                            <select asp-for="ViewModel.UserId" class="form-select" id="userSelect">
                                 <option value="">-- Выберите клиента --</option>
                                  @foreach (var user in Model.Users)
                                 {
                                     <option value="@user.UserId"> @user.LastName @user.FirstName </option>
                                 }
                             </select>
-                            <span asp-validation-for="Command.UserId" class="text-danger"></span>
+                            <span asp-validation-for="ViewModel.UserId" class="text-danger"></span>
                         </div>
 
                         
                         <div class="mb-3">
-                            <label asp-for="Command.StartTime" class="form-label fw-bold">
+                            <label asp-for="ViewModel.StartTime" class="form-label fw-bold">
                                 <i class="fas fa-clock me-1"></i>
-                                @Html.DisplayNameFor(model => model.Command.StartTime)
+                                @Html.DisplayNameFor(model => model.ViewModel.StartTime)
                                 <span class="text-danger">*</span>
                             </label>
-                            <input asp-for="Command.StartTime" class="form-control" type="datetime-local" id="startTime"
-                                   value="@Model.Command.StartTime.ToString("yyyy-MM-ddTHH:mm")" />
-                            <span asp-validation-for="Command.StartTime" class="text-danger"></span>
+                            <input asp-for="ViewModel.StartTime" class="form-control" type="datetime-local" id="startTime"
+                                   value="@Model.ViewModel.StartTime.ToString("yyyy-MM-ddTHH:mm")" />
+                            <span asp-validation-for="ViewModel.StartTime" class="text-danger"></span>
                             <small class="form-text text-muted">Введите дату и время начала игры</small>
                         </div>
 
                       
                         <div class="mb-3">
-                            <label asp-for="Command.EndTime" class="form-label fw-bold">
+                            <label asp-for="ViewModel.EndTime" class="form-label fw-bold">
                                 <i class="fas fa-clock me-1"></i>
-                                @Html.DisplayNameFor(model => model.Command.StartTime)
+                                @Html.DisplayNameFor(model => model.ViewModel.StartTime)
                                 <span class="text-danger">*</span>
                             </label>
-                            <input asp-for="Command.EndTime" class="form-control" type="datetime-local" id="endTime"
-                                   value="@Model.Command.EndTime.ToString("yyyy-MM-ddTHH:mm")" />
-                            <span asp-validation-for="Command.EndTime" class="text-danger"></span>
+                            <input asp-for="ViewModel.EndTime" class="form-control" type="datetime-local" id="endTime"
+                                   value="@Model.ViewModel.EndTime.ToString("yyyy-MM-ddTHH:mm")" />
+                            <span asp-validation-for="ViewModel.EndTime" class="text-danger"></span>
                             <small class="form-text text-muted">Введите дату и время окончания игры</small>
                         </div>
 

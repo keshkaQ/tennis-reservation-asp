@@ -1,6 +1,6 @@
 ﻿@page "{id:guid}"
 @using TennisReservation.Presentation.Pages.Users
-@model TennisReservation.API_RP.Pages.Users.EditModel
+@model TennisReservation.Presentation.Pages.Users.EditModel
 @{
     ViewData["Title"] = "Редактировать пользователя";
 }
@@ -19,40 +19,40 @@
                     <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
 
                     <form method="post">
-                        <input type="hidden" asp-for="Command.Id" />
+                        <input type="hidden" asp-for="ViewModel.Id" />
                         <div class="mb-3">
-                            <label asp-for="Command.FirstName" class="form-label">
-                                @Html.DisplayNameFor(model => model.Command.FirstName)
+                            <label asp-for="ViewModel.FirstName" class="form-label">
+                                @Html.DisplayNameFor(model => model.ViewModel.FirstName)
                                 <span class="text-danger">*</span>
                             </label>
-                            <input asp-for="Command.FirstName" class="form-control" />
-                            <span asp-validation-for="Command.FirstName" class="text-danger"></span>
+                            <input asp-for="ViewModel.FirstName" class="form-control" />
+                            <span asp-validation-for="ViewModel.FirstName" class="text-danger"></span>
                         </div>
 
                      
                         <div class="mb-3">
-                            <label asp-for="Command.LastName" class="form-label">
-                                @Html.DisplayNameFor(model => model.Command.LastName)
+                            <label asp-for="ViewModel.LastName" class="form-label">
+                                @Html.DisplayNameFor(model => model.ViewModel.LastName)
                                 <span class="text-danger">*</span></label>
-                            <input asp-for="Command.LastName" class="form-control" />
-                            <span asp-validation-for="Command.LastName" class="text-danger"></span>
+                            <input asp-for="ViewModel.LastName" class="form-control" />
+                            <span asp-validation-for="ViewModel.LastName" class="text-danger"></span>
                         </div>
 
                         <div class="mb-3">
-                            <label asp-for="Command.Email" class="form-label">
-                                @Html.DisplayNameFor(model => model.Command.Email)
+                            <label asp-for="ViewModel.Email" class="form-label">
+                                @Html.DisplayNameFor(model => model.ViewModel.Email)
                                 <span class="text-danger">*</span></label>
-                            <input asp-for="Command.Email" class="form-control" type="email" />
-                            <span asp-validation-for="Command.Email" class="text-danger"></span>
+                            <input asp-for="ViewModel.Email" class="form-control" type="email" />
+                            <span asp-validation-for="ViewModel.Email" class="text-danger"></span>
                         </div>
 
                     
                         <div class="mb-3">
-                            <label asp-for="Command.PhoneNumber" class="form-label">
-                                @Html.DisplayNameFor(model => model.Command.PhoneNumber)
+                            <label asp-for="ViewModel.PhoneNumber" class="form-label">
+                                @Html.DisplayNameFor(model => model.ViewModel.PhoneNumber)
                                 <span class="text-danger">*</span></label>
-                            <input asp-for="Command.PhoneNumber" class="form-control" />
-                            <span asp-validation-for="Command.PhoneNumber" class="text-danger"></span>
+                            <input asp-for="ViewModel.PhoneNumber" class="form-control" />
+                            <span asp-validation-for="ViewModel.PhoneNumber" class="text-danger"></span>
                         </div>
 
                         <div class="d-flex justify-content-between mt-4">

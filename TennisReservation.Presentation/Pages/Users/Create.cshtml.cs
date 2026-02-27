@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using TennisReservation.Application.Users.Commands;
 using TennisReservation.Contracts.Users.Commands;
+using TennisReservation.Presentation.Pages.Users.ViewModels;
 
 namespace TennisReservation.Presentation.Pages.Users
 {
@@ -18,7 +19,7 @@ namespace TennisReservation.Presentation.Pages.Users
         }
 
         [BindProperty]
-        public CreateUserCommand Command { get; set; }
+        public CreateUserViewModel ViewModel { get; set; } = new();
 
         public IActionResult OnGet()
         {
@@ -33,7 +34,13 @@ namespace TennisReservation.Presentation.Pages.Users
             }
             try
             {
-                var result = await _createUserHandler.HandleAsync(Command, CancellationToken.None);
+                var command = new CreateUserCommand(
+                    ViewModel.FirstName,
+                    ViewModel.LastName,
+                    ViewModel.Email,
+                    ViewModel.PhoneNumber,
+                    ViewModel.Password);
+                var result = await _createUserHandler.HandleAsync(command, CancellationToken.None);
                 if(result.IsFailure)
                 {
                     ModelState.AddModelError(string.Empty, "Ошибка при создании пользователя");
@@ -41,7 +48,7 @@ namespace TennisReservation.Presentation.Pages.Users
                     return Page();
                 }
 
-                TempData["SuccessMessage"] = $"Клиент {Command.FirstName} {Command.LastName} успешно добавлен";
+                TempData["SuccessMessage"] = $"Клиент {command.FirstName} {command.LastName} успешно добавлен";
                 return RedirectToPage("./Index");
             }
             catch (DbUpdateException ex)

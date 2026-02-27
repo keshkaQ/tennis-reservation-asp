@@ -9,6 +9,8 @@ using TennisReservation.Contracts.Reservations.Command;
 using TennisReservation.Contracts.Reservations.Queries;
 using TennisReservation.Contracts.TennisCourts.DTO;
 using TennisReservation.Contracts.Users.Dto;
+using TennisReservation.Presentation.Pages.Reservations.ViewModels;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace TennisReservation.Presentation.Pages.Reservations
 {
@@ -35,7 +37,7 @@ namespace TennisReservation.Presentation.Pages.Reservations
         }
 
         [BindProperty]
-        public UpdateReservationCommand Command { get; set; }
+        public EditReservationViewModel ViewModel { get; set; } = new();
 
         public List<TennisCourtDto> TennisCourts { get; set; } = new();
         public List<UserDto> Users { get; set; } = new();
@@ -60,14 +62,10 @@ namespace TennisReservation.Presentation.Pages.Reservations
                 // Загружаем списки для выпадающих меню
                 await LoadListsAsync();
 
-                // Создаем команду с данными бронирования
-                Command = new UpdateReservationCommand(
-                    reservation.Id,
-                    reservation.CourtId,
-                    reservation.UserId,
-                    reservation.StartTime,
-                    reservation.EndTime
-                );
+                ViewModel.TennisCourtId = reservation.CourtId;
+                ViewModel.UserId = reservation.UserId;
+                ViewModel.StartTime = reservation.StartTime;
+                ViewModel.EndTime = reservation.EndTime;
 
                 return Page();
             }
@@ -79,8 +77,10 @@ namespace TennisReservation.Presentation.Pages.Reservations
             }
         }
 
-        public async Task<IActionResult> OnPostAsync()
+        public async Task<IActionResult> OnPostAsync(Guid id)
         {
+            if (id != ViewModel.Id)
+                return BadRequest("ID в маршруте не совпадает с ID модели");
             if (!ModelState.IsValid)
             {
                 await LoadListsAsync();
@@ -89,7 +89,13 @@ namespace TennisReservation.Presentation.Pages.Reservations
 
             try
             {
-                var result = await _updateReservationHandler.HandleAsync(Command, CancellationToken.None);
+                var command = new UpdateReservationCommand(
+                    ViewModel.Id,
+                    ViewModel.TennisCourtId,
+                    ViewModel.UserId,
+                    ViewModel.StartTime,
+                    ViewModel.EndTime);
+                var result = await _updateReservationHandler.HandleAsync(command, CancellationToken.None);
 
                 if (result.IsFailure)
                 {
@@ -103,7 +109,7 @@ namespace TennisReservation.Presentation.Pages.Reservations
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Ошибка при обновлении бронирования {ReservationId}", Command.Id);
+                _logger.LogError(ex, "Ошибка при обновлении бронирования {ReservationId}", id);
                 ModelState.AddModelError(string.Empty, "Ошибка при сохранении данных");
                 await LoadListsAsync();
                 return Page();

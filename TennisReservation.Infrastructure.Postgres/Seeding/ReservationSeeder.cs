@@ -96,6 +96,58 @@ public class ReservationSeeder : ISeeder
         var users = new List<User>();
         var usedEmails = new HashSet<string>();
 
+        var adminResult = User.Create(
+            "admin",          
+            "admin",         
+            "admin@email.com",
+            "+79990000001"     
+        );
+        usedEmails.Add(adminResult.Value.Email);
+
+        var adminPasswordHash = _passwordHasher.Hash("admin");
+        var adminCredentialsResult = UserCredentials.Create(
+            adminResult.Value.Id,
+            adminPasswordHash,
+            UserRole.Admin
+        );
+
+        if (adminCredentialsResult.IsFailure)
+        {
+            _logger.LogError("Ошибка при создании учетных данных администратора: {Error}", adminCredentialsResult.Error);
+            throw new Exception(adminCredentialsResult.Error);
+        }
+
+        adminResult.Value.SetCredentials(adminCredentialsResult.Value);
+        users.Add(adminResult.Value);
+        _logger.LogInformation("Создан администратор: admin@email.com");
+
+        var userResult = User.Create(
+            "user",           
+            "user",          
+            "user@email.com",  
+            "+79990000002"    
+        );
+
+        var user = userResult.Value;
+        usedEmails.Add(user.Email); 
+
+        var userPasswordHash = _passwordHasher.Hash("user");
+        var userCredentialsResult = UserCredentials.Create(
+            user.Id,
+            userPasswordHash,
+            UserRole.User
+        );
+
+        if (userCredentialsResult.IsFailure)
+        {
+            _logger.LogError("Ошибка при создании учетных данных пользователя: {Error}", userCredentialsResult.Error);
+            throw new Exception(userCredentialsResult.Error);
+        }
+
+        user.SetCredentials(userCredentialsResult.Value);
+        users.Add(user);
+        _logger.LogInformation("Создан пользователь: user@email.com");
+
         // Общий пароль для всех тестовых пользователей
         const string testPassword = "Test123!";
 
@@ -109,10 +161,9 @@ public class ReservationSeeder : ISeeder
                 var lastName = f.Name.LastName();
                 var email = f.Internet.Email(firstName, lastName).ToLower();
 
-                // Гарантируем уникальность email
                 while (usedEmails.Contains(email))
                 {
-                    email = f.Internet.Email(firstName, lastName, _faker.Random.String2(2)).ToLower();
+                    email = f.Internet.Email(firstName, lastName, f.Random.String2(2)).ToLower();
                 }
                 usedEmails.Add(email);
 
@@ -126,20 +177,15 @@ public class ReservationSeeder : ISeeder
                 return userResult.Value;
             });
 
-        // Генерируем пользователей
         var generatedUsers = userFaker.Generate(USERS_COUNT);
 
         for (int i = 0; i < generatedUsers.Count; i++)
         {
-            var user = generatedUsers[i];
-
-            // Первый пользователь - админ, остальные - обычные
-            var role = i == 0 ? UserRole.Admin : UserRole.User;
-
+            var generatedUser = generatedUsers[i];
             var credentialsResult = UserCredentials.Create(
-                user.Id,
-                passwordHash, 
-                role
+                generatedUser.Id,
+                passwordHash,
+                UserRole.User
             );
 
             if (credentialsResult.IsFailure)
@@ -148,14 +194,15 @@ public class ReservationSeeder : ISeeder
                 continue;
             }
 
-            user.SetCredentials(credentialsResult.Value);
-            users.Add(user);
+            generatedUser.SetCredentials(credentialsResult.Value);
+            users.Add(generatedUser);
         }
 
         await _dbContext.Users.AddRangeAsync(users);
         await _dbContext.SaveChangesAsync();
 
-        _logger.LogInformation("Добавлено {Count} пользователей", users.Count);
+        _logger.LogInformation("Добавлено {Count} пользователей (2 конкретных + {GeneratedCount} сгенерированных)",
+            users.Count, generatedUsers.Count);
     }
 
     private async Task SeedCourtsAsync()

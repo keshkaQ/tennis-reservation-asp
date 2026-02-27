@@ -2,12 +2,8 @@
 
 namespace TennisReservation.Presentation.Pages.TennisCourts.ViewModels
 {
-    public class EditTennisCourtViewModel
+    public class CreateTennisCourtViewModel
     {
-        [Required(ErrorMessage = "ID корта обязателен")]
-        [Display(Name = "ID корта")]
-        public Guid Id { get; set; }
-
         [Required(ErrorMessage = "Название корта обязательно к заполнению")]
         [MinLength(3, ErrorMessage = "Название корта должно содержать минимум 3 символа")]
         [MaxLength(100, ErrorMessage = "Название корта не может превышать 100 символов")]
@@ -19,14 +15,12 @@ namespace TennisReservation.Presentation.Pages.TennisCourts.ViewModels
         [Required(ErrorMessage = "Часовая ставка обязательна к заполнению")]
         [Range(100, 10000, ErrorMessage = "Часовая ставка должна быть от 100 до 10000")]
         [DataType(DataType.Currency)]
-        [Display(Name = "Часовая ставка")]
+        [Display(Name = "Часовая ставка (₽/час)")]
         public decimal HourlyRate { get; set; }
 
-        [Required(ErrorMessage = "Описание обязательно к заполнению")]
         [MaxLength(500, ErrorMessage = "Описание не может превышать 500 символов")]
-        [MinLength(3, ErrorMessage = "Описание корта должно содержать минимум 3 символа")]
-        [Display(Name = "Описание")]
+        [Display(Name = "Описание корта")]
         [DataType(DataType.MultilineText)]
-        public string Description { get; set; }
+        public string? Description { get; set; }
     }
 }

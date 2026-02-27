@@ -1,5 +1,6 @@
 ﻿@page "{id:guid}"
-@model TennisReservation.Presentation.TennisCourts.EditModel
+@using TennisReservation.Presentation.Pages.TennisCourts.ViewModels
+@model TennisReservation.Presentation.Pages.TennisCourts.EditModel
 @{
     ViewData["Title"] = "Редактировать корт";
 }
@@ -19,10 +20,9 @@
 
                     <form method="post">
                         <input type="hidden" asp-for="ViewModel.Id" />
-                        
+
                         <div class="mb-3">
                             <label asp-for="ViewModel.Name" class="form-label fw-bold">
-                                <i class="fas fa-font me-1"></i>
                                 @Html.DisplayNameFor(model => model.ViewModel.Name)
                                 <span class="text-danger">*</span>
                             </label>
@@ -35,16 +35,15 @@
 
                         <div class="mb-3">
                             <label asp-for="ViewModel.HourlyRate" class="form-label fw-bold">
-                                <i class="fas fa-ruble-sign me-1"></i>
                                 @Html.DisplayNameFor(model => model.ViewModel.HourlyRate)
                                 <span class="text-danger">*</span>
                             </label>
                             <div class="input-group">
-                                <input asp-for="ViewModel.HourlyRate" 
-                                       class="form-control" 
-                                       type="number" 
-                                       min="100" 
-                                       max="10000" 
+                                <input asp-for="ViewModel.HourlyRate"
+                                       class="form-control"
+                                       type="number"
+                                       min="100"
+                                       max="10000"
                                        step="100" />
                                 <span class="input-group-text">₽/час</span>
                             </div>
@@ -56,14 +55,15 @@
 
                         <div class="mb-3">
                             <label asp-for="ViewModel.Description" class="form-label fw-bold">
-                                <i class="fas fa-align-left me-1"></i>
                                 @Html.DisplayNameFor(model => model.ViewModel.Description)
+                                <span class="text-danger">*</span>
                             </label>
-                            <textarea asp-for="ViewModel.Description" 
-                                      class="form-control" 
+                            <textarea asp-for="ViewModel.Description"
+                                      class="form-control"
                                       rows="5"
-                                      placeholder="Введите описание корта (необязательно)"></textarea>
-                            <span asp-validation-for="ViewModel.Description" class="text-danger small"></span>
+                                      placeholder="Введите описание корта"></textarea>
+                            <span asp-validation-for="ViewModel.Description"
+                                  class="text-danger small"></span>
                             <small class="form-text text-muted">
                                 Максимум 500 символов
                             </small>

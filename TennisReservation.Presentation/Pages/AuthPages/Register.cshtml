@@ -14,98 +14,98 @@
                         <i class="fas fa-user-plus me-2"></i>Регистрация
                     </h4>
                 </div>
-                
+
                 <div class="card-body p-4">
-                    @if (!ViewData.ModelState.IsValid)
+                    @if (Model.ShowRegistrationError && !string.IsNullOrEmpty(Model.RegistrationErrorMessage))
                     {
-                        <div class="alert alert-danger">
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
                             <i class="fas fa-exclamation-circle me-2"></i>
-                            Проверьте правильность заполнения формы
+                            <strong>Ошибка регистрации:</strong> @Model.RegistrationErrorMessage
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
                     }
 
-                    <form method="post">
-                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
+                    <form method="post">
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label asp-for="Input.FirstName" class="form-label">
+                                <label asp-for="Input.FirstName" class="form-label fw-bold">
                                     <i class="fas fa-user me-2"></i>Имя
+                                    <span class="text-danger">*</span>
                                 </label>
-                                <input asp-for="Input.FirstName" type="text" class="form-control" 
+                                <input asp-for="Input.FirstName" class="form-control"
                                        placeholder="Введите имя" />
                                 <span asp-validation-for="Input.FirstName" class="text-danger small"></span>
                             </div>
-                           
+
                             <div class="col-md-6 mb-3">
-                                <label asp-for="Input.LastName" class="form-label">
+                                <label asp-for="Input.LastName" class="form-label fw-bold">
                                     <i class="fas fa-user me-2"></i>Фамилия
+                                    <span class="text-danger">*</span>
                                 </label>
-                                <input asp-for="Input.LastName" type="text" class="form-control" 
+                                <input asp-for="Input.LastName" class="form-control"
                                        placeholder="Введите фамилию" />
                                 <span asp-validation-for="Input.LastName" class="text-danger small"></span>
                             </div>
                         </div>
 
-                       
                         <div class="mb-3">
-                            <label asp-for="Input.Email" class="form-label">
+                            <label asp-for="Input.Email" class="form-label fw-bold">
                                 <i class="fas fa-envelope me-2"></i>Email
+                                <span class="text-danger">*</span>
                             </label>
-                            <input asp-for="Input.Email" type="email" class="form-control" 
+                            <input asp-for="Input.Email" type="email" class="form-control"
                                    placeholder="Введите email" />
                             <span asp-validation-for="Input.Email" class="text-danger small"></span>
                         </div>
 
-                        
                         <div class="mb-3">
-                            <label asp-for="Input.PhoneNumber" class="form-label">
+                            <label asp-for="Input.PhoneNumber" class="form-label fw-bold">
                                 <i class="fas fa-phone me-2"></i>Телефон
+                                <span class="text-danger">*</span>
                             </label>
-                            <input asp-for="Input.PhoneNumber" type="tel" class="form-control" 
+                            <input asp-for="Input.PhoneNumber" type="tel" class="form-control"
                                    placeholder="+7 (999) 123-45-67" />
                             <span asp-validation-for="Input.PhoneNumber" class="text-danger small"></span>
                         </div>
 
                         <div class="row">
-                           
                             <div class="col-md-6 mb-3">
-                                <label asp-for="Input.Password" class="form-label">
+                                <label asp-for="Input.Password" class="form-label fw-bold">
                                     <i class="fas fa-lock me-2"></i>Пароль
+                                    <span class="text-danger">*</span>
                                 </label>
-                                <input asp-for="Input.Password" type="password" class="form-control" 
-                                       placeholder="Минимум 6 символов" />
+                                <input asp-for="Input.Password" type="password" class="form-control"
+                                       placeholder="Минимум 8 символов" />
                                 <span asp-validation-for="Input.Password" class="text-danger small"></span>
                             </div>
 
-                            
                             <div class="col-md-6 mb-3">
-                                <label asp-for="Input.ConfirmPassword" class="form-label">
+                                <label asp-for="Input.ConfirmPassword" class="form-label fw-bold">
                                     <i class="fas fa-lock me-2"></i>Подтверждение
+                                    <span class="text-danger">*</span>
                                 </label>
-                                <input asp-for="Input.ConfirmPassword" type="password" class="form-control" 
+                                <input asp-for="Input.ConfirmPassword" type="password" class="form-control"
                                        placeholder="Повторите пароль" />
                                 <span asp-validation-for="Input.ConfirmPassword" class="text-danger small"></span>
                             </div>
                         </div>
 
-                        <button type="submit" class="btn btn-primary w-100 mb-3">
+                        <button type="submit" class="btn btn-primary w-100 mb-3 py-2">
                             <i class="fas fa-user-plus me-2"></i>Зарегистрироваться
                         </button>
 
-                       
                         <div class="text-center">
                             <p class="mb-0">
-                                Уже есть аккаунт? 
-                                <a asp-page="/AuthPages/Login" class="text-primary text-decoration-none">
+                                Уже есть аккаунт?
+                                <a asp-page="/AuthPages/Login" class="text-primary text-decoration-none fw-bold">
                                     Войти
                                 </a>
                             </p>
                         </div>
                     </form>
                 </div>
-
-            
             </div>
         </div>
     </div>

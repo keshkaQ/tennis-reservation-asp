@@ -1,5 +1,4 @@
 ﻿using CSharpFunctionalExtensions;
-using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +9,7 @@ using TennisReservation.Application.Users.Queries;
 using TennisReservation.Contracts.Reservations.Command;
 using TennisReservation.Contracts.TennisCourts.DTO;
 using TennisReservation.Contracts.Users.Dto;
+using TennisReservation.Presentation.Pages.Reservations.ViewModels;
 
 namespace TennisReservation.Presentation.Pages.Reservations
 {
@@ -33,12 +33,7 @@ namespace TennisReservation.Presentation.Pages.Reservations
         }
 
         [BindProperty]
-        public CreateReservationCommand Command { get; set; } = new(
-            TennisCourtId: Guid.Empty,
-            UserId: Guid.Empty,
-            StartTime: DateTime.Today.AddHours(10),
-            EndTime: DateTime.Today.AddHours(11)
-        );
+        public CreateReservationViewModel ViewModel { get; set; } = new();
 
         public List<TennisCourtDto> TennisCourts { get; set; } = new();
         public List<UserDto> Users { get; set; } = new();
@@ -71,7 +66,12 @@ namespace TennisReservation.Presentation.Pages.Reservations
 
             try
             {
-                var result = await _createReservationHandler.HandleAsync(Command, CancellationToken.None);
+                var command = new CreateReservationCommand(
+                    ViewModel.TennisCourtId,
+                    ViewModel.UserId,
+                    ViewModel.StartTime,
+                    ViewModel.EndTime);
+                var result = await _createReservationHandler.HandleAsync(command, CancellationToken.None);
                 if (result.IsFailure)
                 {
                     ModelState.AddModelError(string.Empty, result.Error);
