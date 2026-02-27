@@ -1,5 +1,4 @@
 ﻿using CSharpFunctionalExtensions;
-using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
 using TennisReservation.Domain.Constants;
 

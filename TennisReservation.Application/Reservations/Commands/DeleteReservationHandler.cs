@@ -25,6 +25,15 @@ namespace TennisReservation.Application.Reservations.Commands
                     return Result.Failure($"Бронирование с {command.Id} не найдено");
                 }
                 var reservationToDelete = existingReservation.Value;
+
+                // Проверка прав обычный пользователь может удалить только свою бронь
+                if (!command.IsAdmin && command.RequestingUserId != reservationToDelete.UserId.Value)
+                {
+                    _logger.LogWarning("Пользователь {UserId} попытался удалить чужое бронирование {ReservationId}",
+                        command.RequestingUserId, command.Id);
+                    return Result.Failure("Нет прав для удаления этого бронирования");
+                }
+
                 var deleteResult = await _reservationRepository.DeleteAsync(reservationToDelete.Id, cancellationToken);
                 if(deleteResult.IsFailure)
                 {

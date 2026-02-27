@@ -1,0 +1,27 @@
+﻿@page
+@using TennisReservation.Presentation.Pages.AuthPages
+@model TennisReservation.Presentation.Pages.AuthPages.LogoutModel
+@{
+    ViewData["Title"] = "Выход из системы";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white text-center py-3">
+                    <h4 class="mb-0">
+                        <i class="fas fa-sign-out-alt me-2"></i>Выход из системы
+                    </h4>
+                </div>
+                
+                <div class="card-body p-4 text-center">
+                    <p>Вы успешно вышли из системы.</p>
+                    <a asp-page="/Index" class="btn btn-primary">
+                        <i class="fas fa-home me-2"></i>На главную
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

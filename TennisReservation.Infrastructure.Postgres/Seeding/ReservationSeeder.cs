@@ -1,6 +1,7 @@
 ﻿using Bogus;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using TennisReservation.Application.Interfaces;
 using TennisReservation.Domain.Enums;
 using TennisReservation.Domain.Models;
 
@@ -11,6 +12,7 @@ public class ReservationSeeder : ISeeder
     private readonly TennisReservationDbContext _dbContext;
     private readonly ILogger<ReservationSeeder> _logger;
     private readonly Faker _faker = new("ru");
+    private readonly IPasswordHasher _passwordHasher;
 
     private const int USERS_COUNT = 50;
     private const int COURTS_COUNT = 10;
@@ -30,9 +32,10 @@ public class ReservationSeeder : ISeeder
         ("Вечерний корт", 1800m, "С отличным освещением")
     };
 
-    public ReservationSeeder(TennisReservationDbContext dbContext, ILogger<ReservationSeeder> logger)
+    public ReservationSeeder(TennisReservationDbContext dbContext, IPasswordHasher passwordHasher, ILogger<ReservationSeeder> logger)
     {
         _dbContext = dbContext;
+        _passwordHasher = passwordHasher;
         _logger = logger;
     }
 
@@ -97,7 +100,7 @@ public class ReservationSeeder : ISeeder
         const string testPassword = "Test123!";
 
         // Хешируем пароль один раз для всех пользователей
-        string passwordHash = BCrypt.Net.BCrypt.HashPassword(testPassword);
+        string passwordHash = _passwordHasher.Hash(testPassword);
 
         var userFaker = new Faker<User>("ru")
             .CustomInstantiator(f =>
@@ -215,7 +218,7 @@ public class ReservationSeeder : ISeeder
 
             var startTime = now.Date.AddDays(daysFromNow).AddHours(startHour);
             var endTime = startTime.AddHours(durationHours);
-            var totalCost = (decimal)durationHours * court.HourlyRate;
+            var totalCost = durationHours * court.HourlyRate;
 
             var reservationResult = Reservation.Create(
                 court.Id,

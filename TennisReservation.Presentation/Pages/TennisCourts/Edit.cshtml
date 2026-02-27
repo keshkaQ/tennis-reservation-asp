@@ -1,0 +1,85 @@
+﻿@page "{id:guid}"
+@model TennisReservation.Presentation.TennisCourts.EditModel
+@{
+    ViewData["Title"] = "Редактировать корт";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-edit me-2"></i> Редактировать корт
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert">
+                    </div>
+
+                    <form method="post">
+                        <input type="hidden" asp-for="ViewModel.Id" />
+                        
+                        <div class="mb-3">
+                            <label asp-for="ViewModel.Name" class="form-label fw-bold">
+                                <i class="fas fa-font me-1"></i>
+                                @Html.DisplayNameFor(model => model.ViewModel.Name)
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="ViewModel.Name" class="form-control" placeholder="Введите название корта" />
+                            <span asp-validation-for="ViewModel.Name" class="text-danger small"></span>
+                            <small class="form-text text-muted">
+                                Минимум 3 символа, только буквы, цифры и пробелы
+                            </small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ViewModel.HourlyRate" class="form-label fw-bold">
+                                <i class="fas fa-ruble-sign me-1"></i>
+                                @Html.DisplayNameFor(model => model.ViewModel.HourlyRate)
+                                <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <input asp-for="ViewModel.HourlyRate" 
+                                       class="form-control" 
+                                       type="number" 
+                                       min="100" 
+                                       max="10000" 
+                                       step="100" />
+                                <span class="input-group-text">₽/час</span>
+                            </div>
+                            <span asp-validation-for="ViewModel.HourlyRate" class="text-danger small"></span>
+                            <small class="form-text text-muted">
+                                От 100 до 10000 ₽ в час
+                            </small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ViewModel.Description" class="form-label fw-bold">
+                                <i class="fas fa-align-left me-1"></i>
+                                @Html.DisplayNameFor(model => model.ViewModel.Description)
+                            </label>
+                            <textarea asp-for="ViewModel.Description" 
+                                      class="form-control" 
+                                      rows="5"
+                                      placeholder="Введите описание корта (необязательно)"></textarea>
+                            <span asp-validation-for="ViewModel.Description" class="text-danger small"></span>
+                            <small class="form-text text-muted">
+                                Максимум 500 символов
+                            </small>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-page="./Index" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-1"></i> Назад к списку
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-1"></i> Сохранить изменения
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

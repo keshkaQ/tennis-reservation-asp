@@ -1,0 +1,155 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Теннисный клуб</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+                <a class="navbar-brand" asp-area="" asp-page="/Index">
+                    <i class="fas fa-tennis-ball me-2"></i>Теннисный клуб
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-page="/Index">
+                                <i class="fas fa-home me-1"></i>Главная
+                            </a>
+                        </li>
+
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="courtsDropdown" role="button" data-bs-toggle="dropdown">
+                                    Корты
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item" asp-area="" asp-page="/TennisCourts/Index">
+                                            <i class="fas fa-list me-2"></i>Список кортов
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-area="" asp-page="/TennisCourts/Create">
+                                            <i class="fas fa-plus me-2"></i>Добавить корт
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="reservationsDropdown" role="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-calendar-alt me-1"></i>Бронирования
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item" asp-area="" asp-page="/Reservations/Index">
+                                            <i class="fas fa-list me-2"></i>Все брони
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-area="" asp-page="/Reservations/Create">
+                                            <i class="fas fa-plus me-2"></i>Забронировать
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="usersDropdown" role="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-users me-1"></i>Клиенты
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item" asp-area="" asp-page="/Users/Index">
+                                            <i class="fas fa-list me-2"></i>Список клиентов
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-area="" asp-page="/Users/Create">
+                                            <i class="fas fa-user-plus me-2"></i>Добавить клиента
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+
+                        <li class="nav-item">
+                            <span class="nav-link text-secondary">|</span>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" href="/swagger" target="_blank">
+                                <i class="fas fa-code me-1"></i>API
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-page="/About">
+                                <i class="fas fa-info-circle me-1"></i>О разработчике
+                            </a>
+                        </li>
+
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <li class="nav-item">
+                                <span class="nav-link text-light">
+                                    <i class="fas fa-user me-1"></i>@User.Identity.Name
+                                </span>
+                            </li>
+                            <li class="nav-item">
+                                <form method="post" asp-page="/AuthPages/Logout" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn nav-link text-light border-0 bg-transparent">
+                                        <i class="fas fa-sign-out-alt me-1"></i>Выйти
+                                    </button>
+                                </form>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-page="/AuthPages/Login">
+                                    <i class="fas fa-sign-in-alt me-1"></i>Войти
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-page="/AuthPages/Register">
+                                    <i class="fas fa-user-plus me-1"></i>Регистрация
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main role="main" class="pb-5">
+        <div class="container mt-4">
+            @RenderBody()
+        </div>
+    </main>
+
+    <footer class="border-top footer text-muted bg-light">
+        <div class="container text-center py-3">
+            &copy; 2026 - Теннисный клуб
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

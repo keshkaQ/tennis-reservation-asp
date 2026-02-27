@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using CSharpFunctionalExtensions;
+using Microsoft.EntityFrameworkCore;
 using TennisReservation.Application.Database;
 using TennisReservation.Contracts.TennisCourts.DTO;
 
@@ -11,8 +12,8 @@ namespace TennisReservation.Application.TennisCourts.Queries
         {
             _readDbContext = readDbContext;
         }
-
-        public async Task<IEnumerable<TennisCourtDto>> HandleAsync(CancellationToken cancellationToken)
+        
+        public async Task<Result<List<TennisCourtDto>>> HandleAsync(CancellationToken cancellationToken)
         {
             return await _readDbContext.TennisCourtsRead
                 .Select(tc => new TennisCourtDto(

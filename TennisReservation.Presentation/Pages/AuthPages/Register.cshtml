@@ -1,0 +1,112 @@
+﻿@page
+@using TennisReservation.Presentation.Pages.AuthPages
+@model TennisReservation.Presentation.Pages.AuthPages.RegisterModel
+@{
+    ViewData["Title"] = "Регистрация";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white text-center py-3">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user-plus me-2"></i>Регистрация
+                    </h4>
+                </div>
+                
+                <div class="card-body p-4">
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            Проверьте правильность заполнения формы
+                        </div>
+                    }
+
+                    <form method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Input.FirstName" class="form-label">
+                                    <i class="fas fa-user me-2"></i>Имя
+                                </label>
+                                <input asp-for="Input.FirstName" type="text" class="form-control" 
+                                       placeholder="Введите имя" />
+                                <span asp-validation-for="Input.FirstName" class="text-danger small"></span>
+                            </div>
+                           
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Input.LastName" class="form-label">
+                                    <i class="fas fa-user me-2"></i>Фамилия
+                                </label>
+                                <input asp-for="Input.LastName" type="text" class="form-control" 
+                                       placeholder="Введите фамилию" />
+                                <span asp-validation-for="Input.LastName" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                       
+                        <div class="mb-3">
+                            <label asp-for="Input.Email" class="form-label">
+                                <i class="fas fa-envelope me-2"></i>Email
+                            </label>
+                            <input asp-for="Input.Email" type="email" class="form-control" 
+                                   placeholder="Введите email" />
+                            <span asp-validation-for="Input.Email" class="text-danger small"></span>
+                        </div>
+
+                        
+                        <div class="mb-3">
+                            <label asp-for="Input.PhoneNumber" class="form-label">
+                                <i class="fas fa-phone me-2"></i>Телефон
+                            </label>
+                            <input asp-for="Input.PhoneNumber" type="tel" class="form-control" 
+                                   placeholder="+7 (999) 123-45-67" />
+                            <span asp-validation-for="Input.PhoneNumber" class="text-danger small"></span>
+                        </div>
+
+                        <div class="row">
+                           
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Input.Password" class="form-label">
+                                    <i class="fas fa-lock me-2"></i>Пароль
+                                </label>
+                                <input asp-for="Input.Password" type="password" class="form-control" 
+                                       placeholder="Минимум 6 символов" />
+                                <span asp-validation-for="Input.Password" class="text-danger small"></span>
+                            </div>
+
+                            
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Input.ConfirmPassword" class="form-label">
+                                    <i class="fas fa-lock me-2"></i>Подтверждение
+                                </label>
+                                <input asp-for="Input.ConfirmPassword" type="password" class="form-control" 
+                                       placeholder="Повторите пароль" />
+                                <span asp-validation-for="Input.ConfirmPassword" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 mb-3">
+                            <i class="fas fa-user-plus me-2"></i>Зарегистрироваться
+                        </button>
+
+                       
+                        <div class="text-center">
+                            <p class="mb-0">
+                                Уже есть аккаунт? 
+                                <a asp-page="/AuthPages/Login" class="text-primary text-decoration-none">
+                                    Войти
+                                </a>
+                            </p>
+                        </div>
+                    </form>
+                </div>
+
+            
+            </div>
+        </div>
+    </div>
+</div>
