@@ -6,109 +6,147 @@
     ViewData["Title"] = "Теннисные корты";
 }
 
-<div class="container mt-4">
+<style>
+.courts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 20px;
+}
+
+.court-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #eee;
+}
+.court-card-header {
+    background: #1e4b3c;
+    color: white;
+    padding: 16px 20px;
+    font-size: 1.05rem;
+    font-weight: 600;
+}
+
+.court-card-body {
+    padding: 18px 20px;
+    flex: 1;
+}
+
+.rate-label, .desc-label {
+    font-size: 0.78rem;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+}
+
+.rate-value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #1e4b3c;
+    margin-bottom: 14px;
+}
+
+.desc-label {
+    margin-bottom: 4px;
+}
+
+.desc-text {
+    font-size: 0.9rem;
+    color: #555;
+    line-height: 1.5;
+}
+
+.court-card-footer {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 20px;
+    background: #f8f9fa;
+    border-top: 1px solid #eee;
+}
+</style>
+
+<div class="page-wrapper">
+
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @TempData["SuccessMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <div class="alert alert-success">
+            <span>✅ @TempData["SuccessMessage"]</span>
+            <button class="close-btn" onclick="this.parentElement.remove()">×</button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-error">
+            <span>⚠️ @TempData["ErrorMessage"]</span>
+            <button class="close-btn" onclick="this.parentElement.remove()">×</button>
         </div>
     }
 
-    @if (TempData["ErrorMessage"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            @TempData["ErrorMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>🎾 Теннисные корты</h1>
-        <div>
-            <a asp-page="/Index" class="btn btn-outline-secondary me-2">
-                <i class="fas fa-home me-1"></i> На главную
-            </a>
-            <a asp-page="Create" class="btn btn-success">
-                <i class="fas fa-plus me-1"></i> Добавить корт
-            </a>
+    <div class="page-header">
+        <h1><i class="fas fa-tennis-ball me-2"></i>Теннисные корты</h1>
+        <div class="header-actions">
+            <a asp-page="/Index" class="btn btn-outline"><i class="fas fa-home"></i> На главную</a>
+            <a asp-page="Create" class="btn btn-primary"><i class="fas fa-plus"></i> Добавить корт</a>
         </div>
     </div>
 
-    <div class="row">
-        @foreach (var court in Model.TennisCourts)
-        {
-            <div class="col-md-4 mb-4">
-                <div class="card h-100 shadow-sm">
-                    <div class="card-header bg-success text-white">
-                        <h5 class="mb-0">@court.Name
-                        </h5>
+    @if (Model.TennisCourts.Any())
+    {
+        <div class="courts-grid">
+            @foreach (var court in Model.TennisCourts)
+            {
+                <div class="court-card">
+                    <div class="court-card-header">@court.Name</div>
+                    <div class="court-card-body">
+                        <div class="rate-label">Почасовая ставка</div>
+                        <div class="rate-value">@court.HourlyRate.ToString("N0") ₽/час</div>
+                        <div class="desc-label">Описание</div>
+                        <div class="desc-text">@(string.IsNullOrEmpty(court.Description) ? "—" : court.Description)</div>
                     </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <h6 class="text-muted">Почасовая ставка:</h6>
-                            <h4 class="text-success">@court.HourlyRate.ToString("N0") ₽/час</h4>
-                        </div>
-
-                        <div class="mb-3">
-                            <h6 class="text-muted">Описание:</h6>
-                            <p class="card-text">@court.Description</p>
-                        </div>
-
-                        <div class="d-flex justify-content-between mt-auto">
-                            <a asp-page="./Edit" asp-route-id="@court.Id" class="btn btn-outline-primary btn-sm">
-                                <i class="fas fa-edit me-1"></i> Редактировать
-                            </a>
-                            <button class="btn btn-sm btn-outline-danger"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#deleteModal-@court.Id">
-                                <i class="fas fa-trash me-2"></i>Удалить
-                            </button>
-                        </div>
+                    <div class="court-card-footer">
+                        <a asp-page="./Edit" asp-route-id="@court.Id" class="btn btn-outline btn-sm"><i class="fas fa-edit"></i> Редактировать</a>
+                        <button class="btn btn-outline-danger btn-sm" onclick="openModal('modal-@court.Id')"><i class="fas fa-trash"></i> Удалить</button>
                     </div>
                 </div>
-                <div class="modal fade"
-                     id="deleteModal-@court.Id"
-                     data-bs-backdrop="static"
-                     data-bs-keyboard="false"
-                     tabindex="-1">
-                     <div class="modal-dialog">
-                         <div class="modal-content">
+            }
+        </div>
 
-                             <div class="modal-header">
-                                 <h5>Подтверждение удаления</h5>
-                                 <button class="btn-close" data-bs-dismiss="modal">
-                                 </button>
-                             </div>
-
-                             <div class="modal-body">
-                                 <p>Вы действительно хотите удалить @court.Name?</p>
-                                 <p class="text-danger">Это действие нельзя отменить</p>
-                             </div>
-
-                             <div class="modal-footer">
-                                 <button class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-                                 <form method="post" asp-page-handler="Delete" asp-route-id="@court.Id"> 
-                                     <button class="btn btn-danger">
-                                         <i class="fas fa-trash me-1"></i> Удалить
-                                     </button>
-                                 </form>
-                             </div>
-                         </div>
-                     </div>>
+        @foreach (var court in Model.TennisCourts)
+        {
+            <div class="modal-overlay" id="modal-@court.Id">
+                <div class="modal-box">
+                    <h5>Подтверждение удаления</h5>
+                    <p>Вы хотите удалить корт:</p>
+                    <p><strong>@court.Name</strong></p>
+                    <p class="warn">⚠️ Это действие нельзя отменить!</p>
+                    <div class="modal-footer">
+                        <button class="btn btn-outline" onclick="closeModal('modal-@court.Id')">Отмена</button>
+                        <form method="post" asp-page-handler="Delete" asp-route-id="@court.Id" style="margin:0">
+                            <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> Удалить</button>
+                        </form>
+                    </div>
                 </div>
             </div>
         }
-    </div>
-
-    @if (!Model.TennisCourts.Any())
+    }
+    else
     {
-        <div class="card shadow-sm">
-            <div class="card-body text-center py-5">
-                <h5 class="text-muted">Корты не найдены</h5>
-                <a asp-page="Create" class="btn btn-success mt-2">
-                    <i class="fas fa-plus me-1"></i> Добавить первый корт
-                </a>
-            </div>
+        <div class="empty-state">
+            <i class="fas fa-tennis-ball"></i>
+            <h5>Корты не найдены</h5>
+            <a asp-page="Create" class="btn btn-primary" style="margin-top:12px;"><i class="fas fa-plus"></i> Добавить первый корт</a>
         </div>
     }
 </div>
+
+<script>
+    function openModal(id) { document.getElementById(id).classList.add('active'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+    document.querySelectorAll('.modal-overlay').forEach(el => {
+        el.addEventListener('click', e => { if (e.target === el) el.classList.remove('active'); });
+    });
+</script>

@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+п»їusing Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using TennisReservation.Application.Auth;
 using TennisReservation.Presentation.Pages.AuthPages.ViewModels;
@@ -12,7 +12,7 @@ public class LoginModel : PageModel
 
     private readonly ILogger<LoginModel> _logger;
     private readonly UserService _userService;
-    public bool ShowLoginError { get; set; }
+    public string? LoginErrorMessage { get; set; }
 
     public LoginModel(ILogger<LoginModel> logger, UserService userService)
     {
@@ -26,7 +26,7 @@ public class LoginModel : PageModel
         {
             if (HttpContext.User.Identity?.IsAuthenticated == true)
             {
-                _logger.LogInformation("Пользователь уже аутентифицирован, перенаправление на главную");
+                _logger.LogInformation("РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ СѓР¶Рµ Р°СѓС‚РµРЅС‚РёС„РёС†РёСЂРѕРІР°РЅ, РїРµСЂРµРЅР°РїСЂР°РІР»РµРЅРёРµ РЅР° РіР»Р°РІРЅСѓСЋ");
                 return RedirectToPage("/Index");
             }
 
@@ -34,51 +34,38 @@ public class LoginModel : PageModel
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Ошибка при проверке аутентификации на странице входа");
+            _logger.LogError(ex, "РћС€РёР±РєР° РїСЂРё РїСЂРѕРІРµСЂРєРµ Р°СѓС‚РµРЅС‚РёС„РёРєР°С†РёРё РЅР° СЃС‚СЂР°РЅРёС†Рµ РІС…РѕРґР°");
             return RedirectToPage("/Error", new { code = 500 });
         }
     }
-
     public async Task<IActionResult> OnPostAsync()
     {
-        ShowLoginError = false;
-
         if (!ModelState.IsValid)
-        {
-            _logger.LogWarning("Невалидная модель при попытке входа для email: {Email}", Input.Email);
             return Page();
-        }
 
         try
         {
-            var token = await _userService.Login(Input.Email!, Input.Password!);
-
-            if (token == null)
+            var result = await _userService.Login(Input.Email!, Input.Password!);
+            if (result.IsFailure)
             {
-                _logger.LogWarning("Неудачная попытка входа для email: {Email}", Input.Email);
-                ShowLoginError = true;
+                LoginErrorMessage = result.Error; 
                 Input.Password = string.Empty;
                 return Page();
             }
 
-            _logger.LogInformation("Пользователь {Email} успешно вошел в систему", Input.Email);
-
-            HttpContext.Response.Cookies.Append("jwt-cookies", token, new CookieOptions
+            HttpContext.Response.Cookies.Append("jwt-cookies", result.Value, new CookieOptions
             {
                 HttpOnly = true,
                 Secure = true,
                 SameSite = SameSiteMode.Strict,
                 Expires = DateTimeOffset.UtcNow.AddHours(12)
             });
-
-            TempData["SuccessMessage"] = "Добро пожаловать!";
             return RedirectToPage("/Index");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Критическая ошибка при входе пользователя {Email}", Input.Email);
-
-            ShowLoginError = true;
+            _logger.LogError(ex, "РљСЂРёС‚РёС‡РµСЃРєР°СЏ РѕС€РёР±РєР° РїСЂРё РІС…РѕРґРµ {Email}", Input.Email);
+            LoginErrorMessage = "РџСЂРѕРёР·РѕС€Р»Р° РѕС€РёР±РєР°. РџРѕРїСЂРѕР±СѓР№С‚Рµ РїРѕР·Р¶Рµ";
             return Page();
         }
     }

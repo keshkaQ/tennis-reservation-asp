@@ -85,33 +85,7 @@ namespace TennisReservation.Domain.Models
 
             return Result.Success();
         }
-
-        // Метод для обновления только статуса
-        public Result UpdateStatus(ReservationStatus newStatus)
-        {
-            // Бизнес-правила для смены статуса
-            if (Status == ReservationStatus.Cancelled && newStatus != ReservationStatus.Cancelled)
-                return Result.Failure("Нельзя восстановить отмененное бронирование");
-
-            if (Status == ReservationStatus.Completed && newStatus != ReservationStatus.Completed)
-                return Result.Failure("Нельзя изменить завершенное бронирование");
-
-            Status = newStatus;
-            return Result.Success();
-        }
-
-        // Метод для пересчета стоимости (если изменилось время или корт)
-        public Result RecalculateCost(decimal hourlyRate)
-        {
-            var hours = (decimal)(EndTime - StartTime).TotalHours;
-            var newTotalCost = hours * hourlyRate;
-
-            if (newTotalCost <= 0)
-                return Result.Failure("Не удалось рассчитать стоимость");
-
-            TotalCost = newTotalCost;
-            return Result.Success();
-        }
+        public void Cancel() => Status = ReservationStatus.Cancelled;
 
         // Валидация
         private static Result ValidateGuid(TennisCourtId tennisCourtId, UserId userId)
@@ -144,5 +118,8 @@ namespace TennisReservation.Domain.Models
                 return Result.Failure("Стоимость не может быть отрицательной");
             return Result.Success();
         }
+
+        public void Activate() => Status = ReservationStatus.Active;
+        public void Complete() => Status = ReservationStatus.Completed;
     }
 }

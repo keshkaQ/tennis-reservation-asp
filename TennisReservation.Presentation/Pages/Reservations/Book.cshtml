@@ -1,0 +1,199 @@
+﻿@page
+@model TennisReservation.Presentation.Pages.Reservations.BookModel
+@{
+    ViewData["Title"] = "Забронировать корт";
+}
+
+<style>
+.wrapper {
+    max-width: 450px;
+    margin: 30px auto;
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+}
+
+.court {
+    background: #1e4b3c;
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+}
+
+.court h3 {
+    font-size: 1.3rem;
+    margin-bottom: 5px;
+}
+
+.court p {
+    margin-bottom: 10px;
+    opacity: 0.9;
+}
+
+.court .rate {
+    font-size: 1.2rem;
+    font-weight: bold;
+    border-top: 1px solid rgba(255,255,255,0.2);
+    padding-top: 10px;
+}
+
+.btn {
+    width: 100%;
+    padding: 15px;
+    font-size: 1.1rem;
+    justify-content: center;
+}
+
+#successModal .modal-box {
+    text-align: center;
+}
+#successModal .modal-box .icon {
+    font-size: 3rem;
+    margin-bottom: 12px;
+}
+
+#successModal .modal-box h3 {
+    color: #1e4b3c;
+    margin-bottom: 8px;
+}
+#successModal .modal-box p {
+    color: #555;
+    margin-bottom: 20px;
+}
+
+#successModal .btn {
+    width: auto;
+    padding: 11px 28px;
+}
+</style>
+
+<div class="wrapper">
+    <div class="back">
+        <a href="/"><i class="fas fa-arrow-left"></i> Назад к кортам</a>
+    </div>
+
+    @if (Model.Court == null)
+    {
+        <div style="color:#dc3545;text-align:center;padding:40px;">
+            <i class="fas fa-exclamation-triangle" style="font-size:3rem;margin-bottom:15px;display:block;"></i>
+            <h3>Корт не найден</h3>
+            <a href="/" class="btn btn-primary" style="margin-top:20px;">Вернуться на главную</a>
+        </div>
+        return;
+    }
+
+    <div class="court">
+        <h3>@Model.Court.Name</h3>
+        <p>@(string.IsNullOrEmpty(Model.Court.Description) ? "Теннисный корт" : Model.Court.Description)</p>
+        <div class="rate">@Model.Court.HourlyRate ₽/час</div>
+    </div>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-error">⚠️ @TempData["Error"]</div>
+    }
+
+    <form method="post" id="bookingForm">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="CourtId" value="@Model.Court.Id" />
+        <input type="hidden" id="hourlyRate" value="@Model.Court.HourlyRate" />
+
+        <div class="field">
+            <label><i class="fas fa-calendar-alt me-2"></i>Дата</label>
+            <input type="date" id="date" name="Date"
+                   value="@DateTime.Today.ToString("yyyy-MM-dd")"
+                   min="@DateTime.Today.ToString("yyyy-MM-dd")"
+                   max="@DateTime.Today.AddDays(30).ToString("yyyy-MM-dd")"
+                   required>
+        </div>
+
+        <div class="field-row">
+            <div class="field">
+                <label><i class="fas fa-clock me-2"></i>Время начала</label>
+                <select name="StartTime" id="startTime" required>
+                    <option value="">Выберите время</option>
+                    @for (int hour = 8; hour <= 21; hour++)
+                    {
+                        <option value="@hour:00">@hour:00</option>
+                        if (hour < 21)
+                        {
+                            <option value="@hour:30">@hour:30</option>
+                        }
+                    }
+                </select>
+                <div class="time-end" id="timeEnd"></div>
+            </div>
+            <div class="field">
+                <label><i class="fas fa-hourglass-half me-2"></i>Длительность</label>
+                <select name="Duration" id="duration" required>
+                    <option value="1">1 час</option>
+                    <option value="1.5">1.5 часа</option>
+                    <option value="2">2 часа</option>
+                    <option value="2.5">2.5 часа</option>
+                    <option value="3">3 часа</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="total">
+            <div class="label">ИТОГОВАЯ СТОИМОСТЬ</div>
+            <div class="value" id="totalPrice">@Model.Court.HourlyRate ₽</div>
+            <div class="details" id="priceDetails">1 час × @Model.Court.HourlyRate ₽/час</div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" id="submitBtn" disabled>
+            <i class="fas fa-check-circle me-2"></i>Подтвердить бронирование
+        </button>
+    </form>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="modal-overlay active" id="successModal">
+        <div class="modal-box">
+            <div class="icon">✅</div>
+            <h3>Готово!</h3>
+            <p>@TempData["Success"]</p>
+            <a href="/" class="btn btn-primary">На главную</a>
+        </div>
+    </div>
+}
+
+<script>
+    const rate = parseFloat(document.getElementById('hourlyRate').value);
+    const startSelect = document.getElementById('startTime');
+    const durationSelect = document.getElementById('duration');
+    const totalEl = document.getElementById('totalPrice');
+    const detailsEl = document.getElementById('priceDetails');
+    const timeEndEl = document.getElementById('timeEnd');
+    const submitBtn = document.getElementById('submitBtn');
+
+    const durationLabels = { '1':'1 час','1.5':'1.5 часа','2':'2 часа','2.5':'2.5 часа','3':'3 часа' };
+
+    function addMinutes(timeStr, minutes) {
+        const [h, m] = timeStr.split(':').map(Number);
+        const total = h * 60 + m + minutes;
+        return `${Math.floor(total/60)}:${String(total%60).padStart(2,'0')}`;
+    }
+
+    function update() {
+        const duration = parseFloat(durationSelect.value);
+        const total = Math.round(rate * duration);
+        totalEl.classList.add('updating');
+        setTimeout(() => { totalEl.textContent = total.toLocaleString('ru-RU') + ' ₽'; totalEl.classList.remove('updating'); }, 150);
+        detailsEl.textContent = `${durationLabels[durationSelect.value] || duration + ' ч'} × ${rate} ₽/час`;
+        if (startSelect.value) {
+            timeEndEl.textContent = `→ окончание в ${addMinutes(startSelect.value, duration * 60)}`;
+            submitBtn.disabled = false;
+        } else {
+            timeEndEl.textContent = '';
+            submitBtn.disabled = true;
+        }
+    }
+
+    startSelect.addEventListener('change', update);
+    durationSelect.addEventListener('change', update);
+    update();
+</script>

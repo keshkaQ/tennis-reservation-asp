@@ -25,17 +25,33 @@ namespace TennisReservation.Application.Reservations.Commands
         {
             try
             {
+                var startTime = DateTime.SpecifyKind(command.StartTime, DateTimeKind.Utc);
+                var endTime = DateTime.SpecifyKind(command.EndTime, DateTimeKind.Utc);
+
                 var court = await _courtsRepository.GetByIdAsync(
                     new TennisCourtId(command.TennisCourtId),
                     cancellationToken);
-
                 if (court.IsFailure)
                     return Result.Failure<ReservationDto>("Корт не найден");
 
-                var hours = (command.EndTime - command.StartTime).TotalHours;
+                var isAvailable = await _reservationRepository.CheckAvailabilityAsync(
+                    command.TennisCourtId,
+                    startTime,
+                    endTime,
+                    cancellationToken: cancellationToken);
+                if (!isAvailable)
+                    return Result.Failure<ReservationDto>("Корт уже забронирован на это время");
+
+                var hours = (endTime - startTime).TotalHours;
                 var totalCost = (decimal)hours * court.Value.HourlyRate;
 
-                var reservationResult = Reservation.Create(new TennisCourtId(command.TennisCourtId), new UserId(command.UserId), command.StartTime, command.EndTime, totalCost);
+                var reservationResult = Reservation.Create(
+                    new TennisCourtId(command.TennisCourtId),
+                    new UserId(command.UserId),
+                    startTime,
+                    endTime,
+                    totalCost);
+
                 if (reservationResult.IsFailure)
                     return Result.Failure<ReservationDto>(reservationResult.Error);
 

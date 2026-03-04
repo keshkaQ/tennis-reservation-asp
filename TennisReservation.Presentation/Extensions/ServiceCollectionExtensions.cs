@@ -5,7 +5,6 @@ using TennisReservation.Application.Interfaces;
 using TennisReservation.Application.Reservations;
 using TennisReservation.Application.Reservations.Commands;
 using TennisReservation.Application.Reservations.Queries;
-using TennisReservation.Application.Statictics;
 using TennisReservation.Application.TennisCourts;
 using TennisReservation.Application.TennisCourts.Commands;
 using TennisReservation.Application.TennisCourts.Queries;
@@ -70,7 +69,10 @@ namespace TennisReservation.Presentation.Extensions
             services.AddScoped<UpdateUserHandler>();
             services.AddScoped<DeleteUserHandler>();
             services.AddScoped<UserService>();
-            services.AddScoped<GetUserWithCredentialsByEmailHandler>();
+            services.AddScoped<ChangePasswordHandler>();
+            services.AddScoped<ChangeRoleHandler>();
+            services.AddScoped<LockUserHandler>();
+            services.AddScoped<UnlockUserHandler>();
 
             return services;
         }
@@ -95,26 +97,18 @@ namespace TennisReservation.Presentation.Extensions
             services.AddScoped<CreateReservationHandler>();
             services.AddScoped<UpdateReservationHandler>();
             services.AddScoped<DeleteReservationHandler>();
+            services.AddScoped<CancelReservationHandler>();
+            services.AddHostedService<ReservationStatusUpdater>();
 
             return services;
         }
 
-        // Регистрация статистики
-        public static IServiceCollection AddStatisticsHandlers(this IServiceCollection services)
-        {
-            services.AddScoped<GetStatisticsHandler>();
-
-            return services;
-        }
-
-        // Комбинированный метод для регистрации всех обработчиков
         public static IServiceCollection AddApplicationHandlers(this IServiceCollection services)
         {
             return services
                 .AddUserHandlers()
                 .AddTennisCourtHandlers()
-                .AddReservationHandlers()
-                .AddStatisticsHandlers();
+                .AddReservationHandlers();
         }
 
         // Регистрация всех сервисов приложения

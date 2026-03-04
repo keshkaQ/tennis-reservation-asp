@@ -10,7 +10,6 @@ using TennisReservation.Contracts.Reservations.Queries;
 using TennisReservation.Contracts.TennisCourts.DTO;
 using TennisReservation.Contracts.Users.Dto;
 using TennisReservation.Presentation.Pages.Reservations.ViewModels;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace TennisReservation.Presentation.Pages.Reservations
 {
@@ -79,8 +78,8 @@ namespace TennisReservation.Presentation.Pages.Reservations
 
         public async Task<IActionResult> OnPostAsync(Guid id)
         {
-            if (id != ViewModel.Id)
-                return BadRequest("ID в маршруте не совпадает с ID модели");
+            ViewModel.Id = id;
+
             if (!ModelState.IsValid)
             {
                 await LoadListsAsync();

@@ -12,14 +12,16 @@ namespace TennisReservation.Presentation.Pages.Reservations.ViewModels
         [Display(Name = "Клиент")]
         public Guid UserId { get; set; }
 
-        [Required(ErrorMessage = "Укажите дату и время начала")]
+        [Required(ErrorMessage = "Укажите дату")]
         [Display(Name = "Начало")]
-        [DataType(DataType.DateTime)]
-        public DateTime StartTime {  get; set; }
+        public string Date {  get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Укажите дату и время окончания")]
+        [Required(ErrorMessage = "Укажите время начала")]
         [Display(Name = "Окончание")]
-        [DataType(DataType.DateTime)]
-        public DateTime EndTime {  get; set; }
+        public string StartTime {  get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Укажите длительность")]
+        [Display(Name = "Длительность")]
+        public string Duration { get; set; } = string.Empty;
     }
 }

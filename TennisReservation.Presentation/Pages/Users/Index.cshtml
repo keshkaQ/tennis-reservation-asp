@@ -6,45 +6,38 @@
     ViewData["Title"] = "Клиенты";
 }
 
-<div class="container mt-4">
+<div class="page-wrapper">
+
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            @TempData["SuccessMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <div class="alert alert-success">
+            <span>✅ @TempData["SuccessMessage"]</span>
+            <button class="close-btn" onclick="this.parentElement.remove()">×</button>
         </div>
     }
-
     @if (TempData["ErrorMessage"] != null)
     {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            @TempData["ErrorMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <div class="alert alert-error">
+            <span>⚠️ @TempData["ErrorMessage"]</span>
+            <button class="close-btn" onclick="this.parentElement.remove()">×</button>
         </div>
     }
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>
-            <i class="fas fa-user-circle me-2"></i>
-            Клиенты
-        </h1>
-        <div>
-            <a asp-page="/Index" class="btn btn-outline-secondary me-2">
-                <i class="fas fa-home me-1"></i> На главную
-            </a>
-            <a asp-page="./Create" class="btn btn-primary">
-                <i class="fas fa-plus me-1"></i> Добавить клиента
-            </a>
+    <div class="page-header">
+        <h1><i class="fas fa-users me-2"></i>Клиенты</h1>
+        <div class="header-actions">
+            <a asp-page="/Index" class="btn btn-outline"><i class="fas fa-home"></i> На главную</a>
+            <a asp-page="./Create" class="btn btn-primary"><i class="fas fa-plus"></i> Добавить клиента</a>
         </div>
     </div>
 
-    <div class="card shadow-sm">
-        <div class="card-header bg-light">
-            <h5>Список клиентов</h5>
-        </div>
-        <div class="card-body p-0">
-            <table class="table table-hover table-striped mb-0">
-                <thead class="table-light">
+    <div class="card">
+        <div class="card-header"><i class="fas fa-list me-2"></i>Список клиентов</div>
+
+        @if (Model.Users.Any())
+        {
+            <table>
+                <thead>
                     <tr>
                         <th>Имя</th>
                         <th>Фамилия</th>
@@ -64,67 +57,57 @@
                             <td>@user.PhoneNumber</td>
                             <td>@user.RegistrationDate.ToString("dd.MM.yyyy")</td>
                             <td>
-                                <a asp-page="./Edit" asp-route-id="@user.UserId"
-                                   class="btn btn-sm btn-outline-primary me-1">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-
-                                <button type="button"
-                                        class="btn btn-sm btn-outline-danger"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#deleteModal-@user.UserId">
-                                    <i class="fas fa-trash"></i>
-                                </button>
+                                <div class="actions">
+                                    <a asp-page="./Edit" asp-route-id="@user.UserId" class="btn btn-outline btn-sm"><i class="fas fa-edit"></i></a>
+                                    <a asp-page="./ManageCredentials" asp-route-id="@user.UserId" title="Управление доступом" class="btn btn-outline btn-sm">
+                                        <i class="fas fa-key"></i>
+                                    </a>
+                                    <button class="btn btn-outline-danger btn-sm" onclick="openModal('modal-@user.UserId')"><i class="fas fa-trash"></i></button> 
+                                </div>
                             </td>
                         </tr>
-
-                        <div class="modal fade"
-                             id="deleteModal-@user.UserId"
-                             data-bs-backdrop="static"
-                             data-bs-keyboard="false"
-                             tabindex="-1">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title">Подтверждение удаления</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <p>Вы действительно хотите удалить клиента?</p>
-                                        <p class="fw-bold">@user.FirstName @user.LastName</p>
-                                        <p class="text-muted">Email: @user.Email</p>
-                                        <p class="text-danger">Это действие нельзя отменить!</p>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                            Отмена
-                                        </button>
-
-                                        <form method="post"  asp-page="./Index"  asp-page-handler="Delete" asp-route-id="@user.UserId">
-                                            <button type="submit" class="btn btn-danger">
-                                                <i class="fas fa-trash me-1"></i> Удалить
-                                            </button>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     }
                 </tbody>
             </table>
 
-            @if (!Model.Users.Any())
+            @foreach (var user in Model.Users)
             {
-                <div class="text-center py-5">
-                    <h5 class="text-muted">Клиенты не найдены</h5>
-                    <a asp-page="./Create" class="btn btn-primary mt-2">
-                        Добавить первого клиента
-                    </a>
+                <div class="modal-overlay" id="modal-@user.UserId">
+                    <div class="modal-box">
+                        <h5>Подтверждение удаления</h5>
+                        <p>Вы хотите удалить клиента:</p>
+                        <p class="name">@user.FirstName @user.LastName</p>
+                        <p>@user.Email</p>
+                        <p class="warn">⚠️ Это действие нельзя отменить!</p>
+                        <div class="modal-footer">
+                            <button class="btn btn-outline" onclick="closeModal('modal-@user.UserId')">Отмена</button>
+                            <form method="post" asp-page-handler="Delete" asp-route-id="@user.UserId" style="margin:0">
+                                <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> Удалить</button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             }
-        </div>
-        <div class="card-footer text-muted">
+        }
+        else
+        {
+            <div class="empty-state">
+                <i class="fas fa-users"></i>
+                <h5>Клиенты не найдены</h5>
+                <a asp-page="./Create" class="btn btn-primary">Добавить первого клиента</a>
+            </div>
+        }
+
+        <div class="card-footer">
             Всего клиентов: <strong>@Model.Users.Count()</strong>
         </div>
     </div>
 </div>
+
+<script>
+    function openModal(id) { document.getElementById(id).classList.add('active'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+    document.querySelectorAll('.modal-overlay').forEach(el => {
+        el.addEventListener('click', e => { if (e.target === el) el.classList.remove('active'); });
+    });
+</script>

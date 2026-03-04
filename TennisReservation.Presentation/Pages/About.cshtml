@@ -4,29 +4,134 @@
 @{
     ViewData["Title"] = "О разработчике";
 }
+
+<style>
+.about-card {
+    max-width: 520px;
+    margin: 40px auto;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    overflow: hidden;
+    padding: 0 0 28px;
+}
+
+.about-header {
+    background: #1e4b3c;
+    padding: 22px 24px;
+    text-align: center;
+}
+
+.about-header h3 {
+    margin: 0;
+    color: white;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.about-body {
+    padding: 28px 28px 0;
+    text-align: center;
+}
+
+.profile-image {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #1e4b3c;
+    margin: 0 auto 18px;
+    display: block;
+}
+
+.profile-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 4px;
+}
+.profile-role {
+    color: #1e4b3c;
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 22px;
+}
+
+.info-item {
+    background: #f8f9fa;
+    padding: 13px 16px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid #eee;
+}
+
+.info-item i {
+    color: #1e4b3c;
+    width: 16px;
+    flex-shrink: 0;
+}
+.info-item strong {
+    color: #555;
+    font-size: 0.85rem;
+    min-width: 56px;
+}
+
+.info-item a {
+    color: #333;
+    text-decoration: none;
+    font-size: 0.92rem;
+}
+
+.info-item a:hover {
+    color: #1e4b3c;
+    text-decoration: underline;
+}
+
+.github-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #24292e;
+    color: white;
+    padding: 11px 26px;
+    border-radius: 8px;
+    text-decoration: none;
+    margin-top: 18px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: background 0.2s, transform 0.15s;
+}
+
+.github-btn:hover {
+    background: #2f363d;
+    color: white;
+    transform: translateY(-1px);
+}
+</style>
+
 <div class="about-card">
     <div class="about-header">
-        <h3>👨‍💻 О разработчике</h3>
+        <h3><i class="fas fa-user me-2"></i>О разработчике</h3>
     </div>
-
     <div class="about-body">
         <img src="https://avatars.mds.yandex.net/get-altay/9753788/2a0000018952d86a62ca53c58d6935d5b4df/XXL_height"
-             alt="Фото разработчика"
-             class="profile-image">
-
+             alt="Фото разработчика" class="profile-image">
         <h4 class="profile-name">Банарь Кирилл</h4>
         <p class="profile-role">Full-stack разработчик</p>
-
         <div class="info-item">
-            <strong>Email:</strong>
+            <i class="fas fa-envelope"></i>
+            <strong>Email</strong>
             <a href="mailto:kirill.banar@example.com">kirill.banar@example.com</a>
         </div>
-
         <div class="info-item">
-            <strong>GitHub:</strong>
+            <i class="fab fa-github"></i>
+            <strong>GitHub</strong>
             <a href="https://github.com/keshkaQ" target="_blank">github.com/keshkaQ</a>
         </div>
-
         <a href="https://github.com/keshkaQ" target="_blank" class="github-btn">
             <i class="fab fa-github"></i> Перейти на GitHub
         </a>

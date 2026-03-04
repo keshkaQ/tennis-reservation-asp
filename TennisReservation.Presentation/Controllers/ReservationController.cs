@@ -5,6 +5,7 @@ using TennisReservation.Application.Reservations.Queries;
 using TennisReservation.Contracts.Reservations.Command;
 using TennisReservation.Contracts.Reservations.DTO;
 using TennisReservation.Contracts.Reservations.Queries;
+using TennisReservation.Domain.Models;
 
 namespace TennisReservation.Presentation.Controllers
 {
@@ -183,6 +184,33 @@ namespace TennisReservation.Presentation.Controllers
 
             _logger.LogInformation("Бронирование {ReservationId} успешно удалено", id);
             return NoContent();
+        }
+
+
+        [HttpPost("{id:guid}/cancel-reservation")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> CancelReservation(
+        [FromRoute] Guid id,
+        [FromServices] CancelReservationHandler handler,
+        CancellationToken cancellationToken)
+        {
+            try
+            {
+                var request = new CancelReservationCommand(new ReservationId(id).Value);
+                var result = await handler.HandleAsync(request, cancellationToken);
+
+                if (result.IsFailure)
+                {
+                    _logger.LogWarning("Ошибка при отмене бронирования: {Error}", result.Error);
+                    return BadRequest(new { error = result.Error });
+                }
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,("Ошибка при отмене бронирования {id}"),id);
+                return StatusCode(500, new { error = "Внутренняя ошибка сервера" });
+            }
         }
     }
 }

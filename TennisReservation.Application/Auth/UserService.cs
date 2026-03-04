@@ -1,32 +1,31 @@
 ﻿using CSharpFunctionalExtensions;
 using Microsoft.Extensions.Logging;
 using TennisReservation.Application.Interfaces;
+using TennisReservation.Application.Users;
 using TennisReservation.Application.Users.Commands;
-using TennisReservation.Application.Users.Queries;
 using TennisReservation.Contracts.Users.Commands;
 using TennisReservation.Contracts.Users.Dto;
-using TennisReservation.Contracts.Users.Queries;
 
 namespace TennisReservation.Application.Auth
 {
     public class UserService
     {
         private readonly CreateUserWithCredentialsHandler _createUserHandler;
-        private readonly GetUserWithCredentialsByEmailHandler _getUserWithCredentialsByEmailHandler;
         private readonly ILogger<UserService> _logger;
         private readonly IPasswordHasher _passwordHasher;
         private readonly IJwtProvider _jwtProvider;
+        private readonly IUserCredentialsRepository _credentialsRepository;
 
         public UserService(CreateUserWithCredentialsHandler createUserHandler,
-            GetUserWithCredentialsByEmailHandler getUserWithCredentialsByEmailHandler, 
             IPasswordHasher passwordHasher,
             IJwtProvider jwtProvider,
+            IUserCredentialsRepository credentialsRepository,
             ILogger<UserService> logger)
         {
             _createUserHandler = createUserHandler;
-            _getUserWithCredentialsByEmailHandler = getUserWithCredentialsByEmailHandler;
             _passwordHasher = passwordHasher;
             _jwtProvider = jwtProvider;
+            _credentialsRepository = credentialsRepository;
             _logger = logger;
         }
 
@@ -43,26 +42,40 @@ namespace TennisReservation.Application.Auth
             }
         }
 
-        public async Task<string?> Login(string email, string password)
+        public async Task<Result<string>> Login(string email, string password)
         {
-            var userResult = await _getUserWithCredentialsByEmailHandler.HandleAsync(
-                new GetUserWithCredentialsByEmailQuery(email),
-                CancellationToken.None);
+            var credentialsResult = await _credentialsRepository.GetWithUserByEmailAsync(email);
+            if (credentialsResult.IsFailure || credentialsResult.Value == null)
+                return Result.Failure<string>("Неверный email или пароль");
 
-            if (userResult.IsFailure)
-            {
-                _logger.LogWarning($"Ошибка при получении пользователя по email {email} : {userResult.Error}");
-                return null;
-            }
+            var credentials = credentialsResult.Value;
 
-            var isPasswordValid = _passwordHasher.Verify(password, userResult.Value.PasswordHash);
+            if (!credentials.CanLogin)
+                return Result.Failure<string>($"Аккаунт заблокирован до {credentials.LockedUntil:dd.MM.yyyy HH:mm}");
+
+            var isPasswordValid = _passwordHasher.Verify(password, credentials.PasswordHash);
             if (!isPasswordValid)
             {
-                _logger.LogWarning($"Введен неверный пароль для пользователя {userResult.Value.UserId}");
-                return null;
+                credentials.RecordFailedAttempt();
+                await _credentialsRepository.UpdateAsync(credentials);
+
+                var attemptsLeft = 5 - credentials.FailedLoginAttempts;
+                var message = attemptsLeft > 0
+                    ? $"Неверный пароль. Осталось попыток: {attemptsLeft}"
+                    : $"Аккаунт заблокирован до {credentials.LockedUntil:HH:mm}";
+                return Result.Failure<string>(message);
             }
 
-            return _jwtProvider.GenerateToken(userResult.Value);
+            credentials.RecordSuccessfulLogin();
+            await _credentialsRepository.UpdateAsync(credentials);
+
+            var userDto = new UserLoginDto(
+                credentials.UserId.Value,
+                credentials.User.Email,
+                credentials.Role,
+                credentials.PasswordHash);
+
+            return Result.Success(_jwtProvider.GenerateToken(userDto));
         }
     }
 }

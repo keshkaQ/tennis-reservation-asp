@@ -2,7 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using TennisReservation.Application.Users;
-using TennisReservation.Domain.Enums;
 using TennisReservation.Domain.Models;
 
 namespace TennisReservation.Infrastructure.Postgres.Repositories
@@ -12,21 +11,16 @@ namespace TennisReservation.Infrastructure.Postgres.Repositories
         public UsersCredentialsRepository(TennisReservationDbContext dbContext, ILogger<UsersCredentialsRepository> logger)
             : base(dbContext, logger) { }
 
-        public async Task<bool> ExistsByEmailAsync(string email,CancellationToken cancellationToken = default)
+        public async Task<Result> UpdateAsync(UserCredentials credentials, CancellationToken cancellationToken = default)
         {
-            email = email?.Trim().ToLower() ?? "";
-
-            return await ExecuteCheckAsync(
-                async () => await _dbContext.Users.AnyAsync(u => u.Email == email, cancellationToken),
-                errorMessage: $"Ошибка при проверке существования email {email}",
-                cancellationToken: cancellationToken);
-        }
-
-        public async Task<Result<UserCredentials>> GetByUserIdAsync(UserId userId,CancellationToken cancellationToken = default)
-        {
-            return await ExecuteQueryAsync(
-                async () => await _dbSet.Include(c => c.User).FirstOrDefaultAsync(c => c.UserId == userId, cancellationToken),
-                errorMessage: $"Ошибка при получении учетных данных для пользователя {userId.Value}",
+            return await ExecuteAsync(
+                async (transaction) =>
+                {
+                    _dbSet.Update(credentials);
+                    await _dbContext.SaveChangesAsync(cancellationToken);
+                },
+                successMessage: $"Учётные данные пользователя {credentials.UserId.Value} обновлены",
+                errorMessage: $"Ошибка при обновлении учётных данных пользователя {credentials.UserId.Value}",
                 cancellationToken: cancellationToken);
         }
 
@@ -54,16 +48,26 @@ namespace TennisReservation.Infrastructure.Postgres.Repositories
                 cancellationToken: cancellationToken);
         }
 
-        public async Task<bool> IsInRoleAsync(UserId userId,UserRole role,CancellationToken cancellationToken = default)
-        {
-            return await ExecuteCheckAsync(
+         public async Task<Result<UserCredentials>> GetWithUserByIdAsync(Guid userId,CancellationToken cancellationToken = default)
+         {
+
+            return await ExecuteQueryAsync(
                 async () =>
                 {
-                    var credentials = await _dbSet.FirstOrDefaultAsync(c => c.UserId == userId, cancellationToken);
-                    return credentials != null && credentials.Role == role;
+                    var user = await _dbContext.Users.Include(u => u.Credentials).FirstOrDefaultAsync(u => u.Id == new UserId(userId), cancellationToken);
+
+                    if (user == null)
+                        return null;
+
+                    if (user.Credentials == null)
+                    {
+                        _logger.LogError("Пользователь {UserId} найден, но учетные данные отсутствуют", user.Id.Value);
+                        return null;
+                    }
+
+                    return user.Credentials;
                 },
-                errorMessage: $"Ошибка при проверке роли пользователя {userId.Value}",
-                cancellationToken: cancellationToken);
+                errorMessage: $"Ошибка при получении учетных данных по id {userId}",cancellationToken: cancellationToken);
         }
     }
 }

@@ -5,76 +5,209 @@
     ViewData["Title"] = "Теннисный клуб - Главная";
 }
 
+<style>
+.hero-section {
+    height: 300px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-align: center;
+    margin-bottom: 50px;
+    border-radius: 0 0 20px 20px;
+}
+
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    border-radius: 0 0 20px 20px;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 800px;
+    padding: 20px;
+}
+
+.hero-content h1 {
+    font-size: 4rem;
+    margin-bottom: 20px;
+}
+
+.hero-content p {
+    font-size: 1.5rem;
+}
+
+.section-title {
+    font-size: 2rem;
+    margin: 0 0 30px;
+    text-align: center;
+    color: #333;
+    position: relative;
+}
+
+.section-title::after {
+    content: '';
+    display: block;
+    width: 100px;
+    height: 3px;
+    background: #1e4b3c;
+    margin: 12px auto 0;
+    border-radius: 2px;
+}
+
+.courts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 50px;
+}
+
+.court-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    border: 1px solid #eee;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+}
+
+.court-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.13);
+    border-color: #1e4b3c;
+}
+
+.court-card-header {
+    background: #1e4b3c;
+    color: white;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+
+.court-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.court-price {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.25);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+.court-desc {
+    color: #666;
+    padding: 16px 20px 20px;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    flex: 1;
+}
+.court-btn {
+    margin: 0 20px 18px;
+    padding: 10px;
+    background: #f8f9fa;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1e4b3c;
+}
+
+.court-card:hover .court-btn {
+    background: #1e4b3c;
+    border-color: #1e4b3c;
+    color: white;
+}
+.empty {
+    text-align: center;
+    padding: 80px 20px;
+    color: #888;
+    background: white;
+    border-radius: 12px;
+    border: 2px dashed #ccc;
+    margin-bottom: 50px;
+}
+
+.empty i {
+    font-size: 3.5rem;
+    color: #ccc;
+    margin-bottom: 15px;
+    display: block;
+}
+
+@@media (max-width: 768px) {
+    .hero-section {
+        height: 380px;
+    }
+    .hero-content h1 {
+        font-size: 2.5rem;
+    }
+    .hero-content p {
+        font-size: 1.1rem;
+    }
+    .section-title {
+        font-size: 1.6rem;
+    }
+}
+</style>
+
 <div class="hero-section" style="background-image: url('/images/main.jpg');">
     <div class="hero-content">
         <h1>Теннисный клуб</h1>
         <p>Профессиональные корты в центре города</p>
-        <a href="/Reservations/Create" class="btn-book">
-            <i class="fas fa-calendar-check me-2"></i>Забронировать корт
-        </a>
     </div>
 </div>
 
-<style>
-    .hero-section {
-        height: 600px;
-        background-size: cover;
-        background-position: center;
-        position: relative;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        text-align: center;
-        margin-bottom: 50px;
-    }
+<div class="container">
+    <h2 class="section-title">Наши корты</h2>
 
-    .hero-section::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
+    @if (Model.Courts != null && Model.Courts.Any())
+    {
+        <div class="courts-grid">
+            @foreach (var court in Model.Courts)
+            {
+                <div class="court-card" onclick="window.location.href='@(User.Identity?.IsAuthenticated == true ? $"/Reservations/Book?courtId={court.Id}" : "/AuthPages/Login")'">
+                    <div class="court-card-header">
+                        <span class="court-name">@court.Name</span>
+                        <span class="court-price">@court.HourlyRate ₽/час</span>
+                    </div>
+                    <div class="court-desc">
+                        @(string.IsNullOrEmpty(court.Description) ? "Профессиональный теннисный корт" : court.Description)
+                    </div>
+                    <div class="court-btn">
+                        <i class="fas fa-calendar-check me-2"></i>Забронировать
+                    </div>
+                </div>
+            }
+        </div>
     }
-
-    .hero-content {
-        position: relative;
-        z-index: 1;
-        max-width: 800px;
-        padding: 20px;
+    else
+    {
+        <div class="empty">
+            <i class="fas fa-tennis-ball"></i>
+            <h3>Корты пока не добавлены</h3>
+            <p>Скоро здесь появятся корты для бронирования</p>
+        </div>
     }
-
-    .hero-content h1 {
-        font-size: 4rem;
-        margin-bottom: 20px;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-    }
-
-    .hero-content p {
-        font-size: 1.5rem;
-        margin-bottom: 30px;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-    }
-
-    .btn-book {
-        display: inline-block;
-        padding: 15px 40px;
-        font-size: 1.3rem;
-        background: linear-gradient(135deg, #28a745, #20c997);
-        color: white;
-        border-radius: 50px;
-        text-decoration: none;
-        transition: transform 0.3s, box-shadow 0.3s;
-        border: none;
-        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-    }
-
-    .btn-book:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
-        color: white;
-    }
-
-</style>
+</div>

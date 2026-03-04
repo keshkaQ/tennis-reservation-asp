@@ -41,15 +41,13 @@ namespace TennisReservation.Domain.Models
                 return Result.Failure<UserCredentials>("ID пользователя не может быть пустым");
             if (string.IsNullOrWhiteSpace(passwordHash))
                 return Result.Failure<UserCredentials>("Хэш пароля не может быть пустым");
-
-
-            return new UserCredentials(new CredentialsId(Guid.NewGuid()),userId,passwordHash,role);
+           
+            var newUser =  new UserCredentials(new CredentialsId(Guid.NewGuid()),userId,passwordHash,role);
+            newUser.RecordSuccessfulLogin();
+            return newUser;
         }
 
         public bool CanLogin => !IsLocked();
-
-        public void ResetLockout() => LockedUntil = null;
-        public void LockUntil(DateTime until) => LockedUntil = until;
         public void RecordSuccessfulLogin()
         {
             LastLoginAt = DateTime.UtcNow;
@@ -66,17 +64,10 @@ namespace TennisReservation.Domain.Models
             }
         }
 
-        public bool IsLocked() =>
-            LockedUntil.HasValue && LockedUntil.Value > DateTime.UtcNow;
-
-        public void ChangeRole(UserRole newRole)
-        {
-            Role = newRole;
-        }
-
-        public void ChangePassword(string newPasswordHash)
-        {
-            PasswordHash = newPasswordHash;
-        }
+        public bool IsLocked() => LockedUntil.HasValue && LockedUntil.Value > DateTime.UtcNow;
+        public void ChangeRole(UserRole newRole) => Role = newRole;
+        public void ChangePassword(string newPasswordHash) => PasswordHash = newPasswordHash; 
+        public void ResetLockout() => LockedUntil = null;
+        public void LockUntil(DateTime until) => LockedUntil = until;
     }
 }

@@ -1,73 +1,44 @@
 ﻿@page
-@using TennisReservation.Presentation.Pages.TennisCourts.ViewModels 
-@model TennisReservation.Presentation.Pages.TennisCourts.CreateModel  
+@using TennisReservation.Presentation.Pages.TennisCourts.ViewModels
+@model TennisReservation.Presentation.Pages.TennisCourts.CreateModel
 @{
     ViewData["Title"] = "Добавить корт";
 }
 
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow-sm">
-                <div class="card-header bg-success text-white">
-                    <h4>Добавление новой площадки</h4>
+<div class="page-wrapper" style="max-width:540px;margin:40px auto;padding:0 16px;">
+    <div class="card">
+        <div class="card-header">
+            <h4><i class="fas fa-plus me-2"></i>Добавление новой площадки</h4>
+        </div>
+        <div class="card-body">
+            <div asp-validation-summary="ModelOnly" class="alert-error"></div>
+            <form method="post" id="createForm">
+                <div class="field">
+                    <label asp-for="ViewModel.Name">@Html.DisplayNameFor(model => model.ViewModel.Name)</label>
+                    <input asp-for="ViewModel.Name" placeholder="Введите название корта" />
+                    <span asp-validation-for="ViewModel.Name" class="text-danger"></span>
+                    <div class="field-hint">Минимум 3 символа, только буквы, цифры и пробелы</div>
                 </div>
-                <div class="card-body">
-                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
-                    
-                    <form method="post">
-                        <div class="mb-3">
-                            <label class="form-label" asp-for="ViewModel.Name">
-                                @Html.DisplayNameFor(model => model.ViewModel.Name)
-                                <span class="text-danger">*</span>
-                            </label>
-                            <input asp-for="ViewModel.Name" class="form-control" placeholder="Введите название корта" />
-                            <span asp-validation-for="ViewModel.Name" class="text-danger"></span>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label" asp-for="ViewModel.HourlyRate">
-                                @Html.DisplayNameFor(model => model.ViewModel.HourlyRate)
-                                <span class="text-danger">*</span>
-                            </label>
-                            <div class="input-group">
-                                <input asp-for="ViewModel.HourlyRate" 
-                                       class="form-control" 
-                                       type="number" 
-                                       min="100" 
-                                       max="10000" 
-                                       step="100" 
-                                       placeholder="1000" />
-                                <span class="input-group-text">₽/час</span>
-                            </div>
-                            <span asp-validation-for="ViewModel.HourlyRate" class="text-danger"></span>
-                            <small class="form-text text-muted">От 100 до 10000 ₽ в час</small>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label"
-								   asp-for="ViewModel.Description">
-                                @Html.DisplayNameFor(model => model.ViewModel.Description)
-                            </label>
-                            <textarea asp-for="ViewModel.Description" 
-                                      class="form-control" 
-                                      rows="5"
-                                      placeholder="Введите описание корта (необязательно)"></textarea>
-                            <span asp-validation-for="ViewModel.Description" class="text-danger"></span>
-                            <small class="form-text text-muted">Максимум 500 символов</small>
-                        </div>
-
-                        <div class="d-flex justify-content-between mt-4">
-                            <a asp-page="./Index" class="btn btn-outline-secondary">
-                                <i class="fas fa-arrow-left me-1"></i> Назад к списку кортов
-                            </a>
-                            <button type="submit" class="btn btn-success">
-                                <i class="fas fa-save me-1"></i> Сохранить корт
-                            </button>
-                        </div>
-                    </form>
+                <div class="field">
+                    <label asp-for="ViewModel.HourlyRate">@Html.DisplayNameFor(model => model.ViewModel.HourlyRate)</label>
+                    <div class="input-with-suffix">
+                        <input asp-for="ViewModel.HourlyRate" type="number" min="100" max="10000" step="100" placeholder="1000" />
+                        <span class="input-suffix">₽/час</span>
+                    </div>
+                    <span asp-validation-for="ViewModel.HourlyRate" class="text-danger"></span>
+                    <div class="field-hint">От 100 до 10000 ₽ в час</div>
                 </div>
-            </div>
+                <div class="field">
+                    <label asp-for="ViewModel.Description">@Html.DisplayNameFor(model => model.ViewModel.Description)</label>
+                    <textarea asp-for="ViewModel.Description" rows="4" placeholder="Введите описание корта (необязательно)"></textarea>
+                    <span asp-validation-for="ViewModel.Description" class="text-danger"></span>
+                    <div class="field-hint">Максимум 500 символов</div>
+                </div>
+            </form>
+        </div>
+        <div class="card-footer">
+            <a asp-page="./Index" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Назад к списку</a>
+            <button type="submit" form="createForm" class="btn btn-primary"><i class="fas fa-save"></i> Сохранить корт</button>
         </div>
     </div>
 </div>

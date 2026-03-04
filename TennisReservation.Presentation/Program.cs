@@ -28,7 +28,7 @@ Log.Logger = new LoggerConfiguration()
     )
     .CreateLogger();
 
-// Регистрация сервисов приложения (сокращенно!)
+// Регистрация сервисов приложения
 builder.Services.AddApplicationServices(builder.Configuration);
 
 // Добавление контроллеров и Razor Pages
@@ -53,8 +53,7 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // Аутентификация
-builder.Services.AddApiAuthentification(
-    Options.Create(builder.Configuration.GetSection(nameof(JwtOptions)).Get<JwtOptions>()));
+builder.Services.AddApiAuthentification(Options.Create(builder.Configuration.GetSection(nameof(JwtOptions)).Get<JwtOptions>()));
 
 var app = builder.Build();
 

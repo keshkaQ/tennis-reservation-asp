@@ -69,7 +69,7 @@ namespace TennisReservation.Infrastructure.Postgres.Repositories
                  async () =>
                  {
                      var query = _dbSet
-                         .Where(r => r.TennisCourtId.Value == tennisCourtId)
+                         .Where(r => r.TennisCourtId == new TennisCourtId(tennisCourtId))
                          .Where(r =>
                              (startTime >= r.StartTime && startTime < r.EndTime) ||
                              (endTime > r.StartTime && endTime <= r.EndTime) ||
@@ -78,7 +78,7 @@ namespace TennisReservation.Infrastructure.Postgres.Repositories
 
                      if (excludeReservationId.HasValue)
                      {
-                         query = query.Where(r => r.Id.Value != excludeReservationId.Value);
+                         query = query.Where(r => r.Id != new ReservationId(excludeReservationId.Value));
                      }
 
                      return !await query.AnyAsync(cancellationToken);

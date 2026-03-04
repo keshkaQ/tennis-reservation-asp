@@ -21,7 +21,6 @@ namespace TennisReservation.Presentation.Pages.Users.ViewModels
         public string LastName { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Электронный адрес обязателен к заполнению")]
-        [EmailAddress(ErrorMessage = "Введите корректный электронный адрес")]
         [MaxLength(255, ErrorMessage = "Электронный адрес не может превышать 255 символов")]
         [RegularExpression(@"^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
             ErrorMessage = "Введите корректный электронный адрес (например: name@domain.com)")]
@@ -29,7 +28,6 @@ namespace TennisReservation.Presentation.Pages.Users.ViewModels
         public string Email { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Номер телефона обязателен к заполнению")]
-        [Phone(ErrorMessage = "Введите корректный номер телефона")]
         [MaxLength(20, ErrorMessage = "Номер телефона не может превышать 20 символов")]
         [RegularExpression(@"^(\+7|8)?[\s\-]?\(?\d{3}\)?[\s\-]?\d{3}[\s\-]?\d{2}[\s\-]?\d{2}$",
             ErrorMessage = "Введите корректный номер телефона (например: +7 (999) 123-45-67 или 89991234567)")]
@@ -37,10 +35,8 @@ namespace TennisReservation.Presentation.Pages.Users.ViewModels
         public string PhoneNumber { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Пароль обязателен к заполнению")]
-        [MinLength(8, ErrorMessage = "Пароль должен содержать минимум 8 символов")]
-        [MaxLength(100, ErrorMessage = "Пароль не может превышать 100 символов")]
-        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{8,}$",
-            ErrorMessage = "Пароль должен содержать как минимум одну заглавную букву, одну строчную букву, одну цифру и один специальный символ")]
+        [RegularExpression(@"^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{5,100}$",
+            ErrorMessage = "Пароль должен содержать минимум одну букву, одну цифру и быть не короче 5 символов")]
         [DataType(DataType.Password)]
         [Display(Name = "Пароль")]
         public string Password { get; set; } = string.Empty;

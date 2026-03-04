@@ -151,7 +151,7 @@ namespace TennisReservation.Presentation.Controllers
         }
 
         [HttpPost]
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateUser(
             [FromBody] CreateUserCommand request,
             [FromServices] CreateUserWithCredentialsHandler handler,
@@ -314,16 +314,117 @@ namespace TennisReservation.Presentation.Controllers
             CancellationToken cancellationToken)
         {
             var token = await userService.Login(request.Email, request.Password);
-            if (token == null)
+            if (token.IsFailure)
                 return Unauthorized(new { error = "Неверный email или пароль" });
 
-            HttpContext.Response.Cookies.Append("jwt-cookies", token, new CookieOptions
+            HttpContext.Response.Cookies.Append("jwt-cookies", token.Value, new CookieOptions
             {
                 HttpOnly = true,
                 Secure = true,
                 SameSite = SameSiteMode.Strict,
                 Expires = DateTimeOffset.UtcNow.AddHours(12)
             });
+            return Ok();
+        }
+
+        [HttpPost("{id}/change-role")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ChangeRole(
+        [FromRoute] Guid id,
+        [FromBody] ChangeRoleRequest request,
+        [FromServices] ChangeRoleHandler handler,
+        CancellationToken cancellationToken)
+        {
+            var currentUserId = User.FindFirst("userId")?.Value;
+            if (currentUserId != null && id == Guid.Parse(currentUserId))
+                return BadRequest(new { error = "Нельзя изменить роль самому себе" });
+
+            var command = new ChangeRoleCommand(id, request.Role);
+            var result = await handler.HandleAsync(command, cancellationToken);
+
+            if (result.IsFailure)
+            {
+                if (result.Error.Contains("не найден"))
+                    return NotFound(new { error = result.Error });
+                return BadRequest(new { error = result.Error });
+            }
+
+            _logger.LogInformation("Роль пользователя {UserId} успешно изменена", id);
+            return Ok();
+        }
+
+        [HttpPost("{id}/change-password")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> ChangePassword(
+        [FromRoute] Guid id,
+        [FromBody] ChangePasswordRequest request,
+        [FromServices] ChangePasswordHandler handler,
+        CancellationToken cancellationToken)
+        {
+            var currentUserId = User.FindFirst("userId")?.Value;
+            if (currentUserId != null && id == Guid.Parse(currentUserId))
+                return BadRequest(new { error = "Нельзя изменить пароль самому себе" });
+            var command = new ChangePasswordCommand(id, request.NewPassword);
+            var result = await handler.HandleAsync(command, cancellationToken);
+
+            if (result.IsFailure)
+            {
+                if (result.Error.Contains("не найден"))
+                    return NotFound(new { error = result.Error });
+                return BadRequest(new { error = result.Error });
+            }
+
+            _logger.LogInformation("Пароль пользователя {UserId} успешно изменен", id);
+            return Ok();
+        }
+
+        [HttpPost("{id}/lock-user")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> LockUser(
+        [FromRoute] Guid id,
+        [FromBody] LockUserRequest request,
+        [FromServices] LockUserHandler handler,
+        CancellationToken cancellationToken)
+        {
+            var currentUserId = User.FindFirst("userId")?.Value;
+            if (currentUserId != null && id == Guid.Parse(currentUserId))
+                return BadRequest(new { error = "Нельзя заблокировать самого себя" });
+           if (request.LockTime <= DateTime.UtcNow)
+             return BadRequest(new { error = "Дата блокировки должна быть в будущем" });
+
+            var command = new LockUserCommand(id, request.LockTime);
+            var result = await handler.HandleAsync(command, cancellationToken);
+
+            if (result.IsFailure)
+            {
+                if (result.Error.Contains("не найден"))
+                    return NotFound(new { error = result.Error });
+                return BadRequest(new { error = result.Error });
+            }
+
+            _logger.LogInformation("Пользователь {UserId} успешно заблокирован до {Date}", id,request.LockTime);
+            return Ok();
+        }
+
+
+        [HttpPost("{id}/unlock-user")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UnlockUser(
+        [FromRoute] Guid id,
+        [FromServices] UnlockUserHandler handler,
+        CancellationToken cancellationToken)
+        {
+            var command = new UnlockUserCommand(id);
+            var result = await handler.HandleAsync(command, cancellationToken);
+
+            if (result.IsFailure)
+            {
+                if (result.Error.Contains("не найден"))
+                    return NotFound(new { error = result.Error });
+                return BadRequest(new { error = result.Error });
+            }
+
+            _logger.LogInformation("Пользователь {UserId} успешно разблокирован", id);
             return Ok();
         }
     }

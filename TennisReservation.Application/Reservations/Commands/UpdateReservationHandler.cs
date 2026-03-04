@@ -22,7 +22,10 @@ namespace TennisReservation.Application.Reservations.Commands
         public async Task<Result<ReservationDto>> HandleAsync(UpdateReservationCommand command, CancellationToken cancellationToken)
         {
             try
-            {
+            { 
+                var startTime = DateTime.SpecifyKind(command.StartTime, DateTimeKind.Utc);
+                var endTime = DateTime.SpecifyKind(command.EndTime, DateTimeKind.Utc);
+
                 var existingReservation = await _reservationRepository.GetByIdAsync(new ReservationId(command.Id),cancellationToken);
                 if (existingReservation.IsFailure)
                 {
@@ -33,6 +36,16 @@ namespace TennisReservation.Application.Reservations.Commands
 
                 if (court.IsFailure)
                     return Result.Failure<ReservationDto>("Корт не найден");
+
+                var isAvailable = await _reservationRepository.CheckAvailabilityAsync(
+                    command.TennisCourtId,
+                    startTime,
+                    endTime,
+                    excludeReservationId: command.Id, 
+                    cancellationToken: cancellationToken);
+
+                if (!isAvailable)
+                    return Result.Failure<ReservationDto>("Корт уже забронирован на это время");
                 var hours = (decimal)(command.EndTime - command.StartTime).TotalHours;
                 var totalCost = hours * court.Value.HourlyRate;
 
@@ -41,21 +54,18 @@ namespace TennisReservation.Application.Reservations.Commands
                 var updateResult = reservationToUpdate.Update(
                     new TennisCourtId(command.TennisCourtId),
                     new UserId(command.UserId),
-                    command.StartTime,
-                    command.EndTime, totalCost
-                    );
+                    startTime,
+                    endTime,
+                    totalCost);
                 if(updateResult.IsFailure)
                 {
-                    _logger.LogWarning("Ошибка валидации при обновлении бронирования" +
-                        "{ReservationId}: {Error}",command.Id, updateResult.Error);
+                    _logger.LogWarning("Ошибка валидации при обновлении бронирования" +"{ReservationId}: {Error}",command.Id, updateResult.Error);
                     return Result.Failure<ReservationDto>(updateResult.Error);
                 }
                 var saveResult = await _reservationRepository.UpdateAsync(reservationToUpdate, cancellationToken);
                 if(saveResult.IsFailure)
                 {
-                    _logger.LogError(
-                       "Не удалось сохранить бронирование {ReservationId} в БД",
-                       command.Id);
+                    _logger.LogError("Не удалось сохранить бронирование {ReservationId} в БД",command.Id);
                     return Result.Failure<ReservationDto>(saveResult.Error);
                 }
                 var dto = new ReservationDto(reservationToUpdate.Id.Value,
@@ -66,10 +76,7 @@ namespace TennisReservation.Application.Reservations.Commands
                     reservationToUpdate.TotalCost,
                     reservationToUpdate.Status);
 
-                _logger.LogInformation(
-             "Бронирование {ReservationId} успешно обновлено",
-             reservationToUpdate.Id.Value);
-
+                _logger.LogInformation("Бронирование {ReservationId} успешно обновлено",reservationToUpdate.Id.Value);
                 return Result.Success(dto);
 
             }
