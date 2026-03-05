@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TennisReservation.Application.Reservations.Commands;
+using TennisReservation.Application.Reservations.Queries;
 using TennisReservation.Contracts.Reservations.Command;
 using TennisReservation.Contracts.Reservations.DTO;
 using TennisReservation.Contracts.Reservations.Queries;
-using TennisReservation.Domain.Models;
+using TennisReservation.Domain.Enums;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -25,22 +26,6 @@ public class ReservationController : ControllerBase
         CancellationToken cancellationToken)
     {
         var reservations = await handler.HandleAsync(cancellationToken);
-        return Ok(reservations);
-    }
-
-    [HttpGet("user/{userId:guid}")]
-    public async Task<ActionResult<IEnumerable<ReservationListItemDto>>> GetReservationsByUserId(
-        [FromRoute] Guid userId,
-        [FromServices] GetAllReservationsByUserIdHandler handler,
-        CancellationToken cancellationToken)
-    {
-        var currentUserId = User.FindFirst("userId")?.Value;
-        var isAdmin = User.IsInRole("Admin");
-
-        if (!isAdmin && userId.ToString() != currentUserId)
-            return Forbid();
-
-        var reservations = await handler.HandleAsync(userId, cancellationToken);
         return Ok(reservations);
     }
 
@@ -155,5 +140,27 @@ public class ReservationController : ControllerBase
             return BadRequest(new { error = result.Error });
 
         return Ok();
+    }
+
+    [HttpGet("/by-date")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> AllReservationsByDate(
+       [FromQuery] DateOnly date,
+       [FromServices] GetAllReservationsByDateHandler handler,
+       CancellationToken cancellationToken)
+    {
+        var result = await handler.HandleAsync(date, cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpGet("by-status")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> AllReservationByStatus(
+   [FromQuery] ReservationStatus status,
+   [FromServices] GetAllReservationByStatusHandler handler,
+   CancellationToken cancellationToken)
+    {
+        var result = await handler.HandleAsync(status, cancellationToken);
+        return Ok(result);
     }
 }

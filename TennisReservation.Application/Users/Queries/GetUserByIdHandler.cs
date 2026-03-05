@@ -33,7 +33,7 @@ public class GetUserByIdHandler
                     user.Reservations.Count()
                 )).FirstOrDefaultAsync(cancellationToken);
 
-            return Result.Success<UserDto?>(user);
+            return Result.Success(user);
         }
         catch (Exception ex)
         {

@@ -17,9 +17,14 @@ public class LogoutModel : PageModel
         return Page();
     }
 
-    public async Task<IActionResult> OnPostAsync()
+    public IActionResult OnPost()
     {
-        Response.Cookies.Delete("jwt-cookies");
+        Response.Cookies.Delete("jwt-cookies", new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Strict
+        });
         _logger.LogInformation("Пользователь вышел из системы");
         return RedirectToPage("/Index");
     }

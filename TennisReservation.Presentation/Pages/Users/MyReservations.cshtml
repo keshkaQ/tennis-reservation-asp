@@ -33,6 +33,63 @@
         background: #fee2e2;
         color: #b91c1c;
     }
+
+    thead a {
+        color: inherit;
+        text-decoration: none;
+        white-space: nowrap;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+        thead a:hover {
+            text-decoration: underline;
+            opacity: 0.8;
+        }
+
+    .filter-tabs {
+        display: flex;
+        gap: 8px;
+        padding: 12px 16px 0;
+        flex-wrap: wrap;
+    }
+
+    .filter-tab {
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-decoration: none;
+        border: 2px solid transparent;
+        transition: all 0.15s;
+        color: #374151;
+        background: #f3f4f6;
+    }
+
+        .filter-tab:hover {
+            background: #e5e7eb;
+            text-decoration: none;
+            color: #111;
+        }
+
+        .filter-tab.active-tab {
+            background: #1d4ed8;
+            color: #fff;
+            border-color: #1d4ed8;
+        }
+
+        .filter-tab.tab-active {
+            background: #dcfce7;
+            color: #15803d;
+            border-color: #15803d;
+        }
+
+            .filter-tab.tab-active.active-tab {
+                background: #15803d;
+                color: #fff;
+            }
 </style>
 
 <div class="page-wrapper">
@@ -69,16 +126,129 @@
             <i class="fas fa-list me-2"></i>Список моих бронирований
         </div>
 
+        <div class="filter-tabs">
+            <a asp-page="./MyReservations"
+               asp-route-statusFilter="All"
+               asp-route-sortField="@Model.SortField"
+               asp-route-sortAsc="@Model.SortAsc.ToString().ToLower()"
+               class="filter-tab @(Model.StatusFilter == "All" ? "active-tab" : "")">
+                Все
+            </a>
+            <a asp-page="./MyReservations"
+               asp-route-statusFilter="Active"
+               asp-route-sortField="@Model.SortField"
+               asp-route-sortAsc="@Model.SortAsc.ToString().ToLower()"
+               class="filter-tab tab-active @(Model.StatusFilter == "Active" ? "active-tab" : "")">
+                <i class="fas fa-bolt" style="font-size:0.75rem"></i> Активные
+            </a>
+            <a asp-page="./MyReservations"
+               asp-route-statusFilter="Completed"
+               asp-route-sortField="@Model.SortField"
+               asp-route-sortAsc="@Model.SortAsc.ToString().ToLower()"
+               class="filter-tab @(Model.StatusFilter == "Completed" ? "active-tab" : "")"
+               style="background:#f3f4f6; color:#6b7280; border-color:@(Model.StatusFilter == "Completed" ? "#6b7280" : "transparent")">
+                Завершённые
+            </a>
+            <a asp-page="./MyReservations"
+               asp-route-statusFilter="Cancelled"
+               asp-route-sortField="@Model.SortField"
+               asp-route-sortAsc="@Model.SortAsc.ToString().ToLower()"
+               class="filter-tab @(Model.StatusFilter == "Cancelled" ? "active-tab" : "")"
+               style="@(Model.StatusFilter == "Cancelled" ? "background:#b91c1c; color:#fff; border-color:#b91c1c;" : "background:#fee2e2; color:#b91c1c; border-color:transparent;")">
+                Отменённые
+            </a>
+        </div>
+
         @if (Model.Reservations.Any())
         {
             <table>
                 <thead>
                     <tr>
-                        <th>Корт</th>
-                        <th>Начало</th>
-                        <th>Окончание</th>
-                        <th>Стоимость</th>
-                        <th>Статус</th>
+                        <th>
+                            <a asp-page="./MyReservations"
+                               asp-route-sortField="CourtName"
+                               asp-route-sortAsc="@(Model.SortField == "CourtName" ? (!Model.SortAsc).ToString().ToLower() : "true")"
+                               asp-route-statusFilter="@Model.StatusFilter">
+                                Корт
+                                @if (Model.SortField == "CourtName")
+                                {
+                                    <span>@(Model.SortAsc ? "▲" : "▼")</span>
+                                }
+                                else
+                                {
+
+                                    <span style="opacity:0.4">⇅</span>
+                                }
+                            </a>
+                        </th>
+                        <th>
+                            <a asp-page="./MyReservations"
+                               asp-route-sortField="StartTime"
+                               asp-route-sortAsc="@(Model.SortField == "StartTime" ? (!Model.SortAsc).ToString().ToLower() : "true")"
+                               asp-route-statusFilter="@Model.StatusFilter">
+                                Начало
+                                @if (Model.SortField == "StartTime")
+                                {
+                                    <span>@(Model.SortAsc ? "▲" : "▼")</span>
+                                }
+                                else
+                                {
+
+                                    <span style="opacity:0.4">⇅</span>
+                                }
+                            </a>
+                        </th>
+                        <th>
+                            <a asp-page="./MyReservations"
+                               asp-route-sortField="EndTime"
+                               asp-route-sortAsc="@(Model.SortField == "EndTime" ? (!Model.SortAsc).ToString().ToLower() : "true")"
+                               asp-route-statusFilter="@Model.StatusFilter">
+                                Окончание
+                                @if (Model.SortField == "EndTime")
+                                {
+                                    <span>@(Model.SortAsc ? "▲" : "▼")</span>
+                                }
+                                else
+                                {
+
+                                    <span style="opacity:0.4">⇅</span>
+                                }
+                            </a>
+                        </th>
+                        <th>
+                            <a asp-page="./MyReservations"
+                               asp-route-sortField="TotalCost"
+                               asp-route-sortAsc="@(Model.SortField == "TotalCost" ? (!Model.SortAsc).ToString().ToLower() : "true")"
+                               asp-route-statusFilter="@Model.StatusFilter">
+                                Стоимость
+                                @if (Model.SortField == "TotalCost")
+                                {
+                                    <span>@(Model.SortAsc ? "▲" : "▼")</span>
+                                }
+                                else
+                                {
+
+                                    <span style="opacity:0.4">⇅</span>
+                                }
+                            </a>
+                        </th>
+                        <th>
+                            <a asp-page="./MyReservations"
+                               asp-route-sortField="Status"
+                               asp-route-sortAsc="@(Model.SortField == "Status" ? (!Model.SortAsc).ToString().ToLower() : "true")"
+                               asp-route-statusFilter="@Model.StatusFilter">
+                                Статус
+                                @if (Model.SortField == "Status")
+                                {
+                                    <span>@(Model.SortAsc ? "▲" : "▼")</span>
+                                }
+                                else
+                                {
+
+                                    <span style="opacity:0.4">⇅</span>
+                                }
+                            </a>
+                        </th>
                         <th>Действия</th>
                     </tr>
                 </thead>
@@ -141,7 +311,7 @@
             }
 
             <div class="card-footer">
-                <span>Всего: <strong>@Model.Reservations.Count()</strong></span>
+                <span>Показано: <strong>@Model.Reservations.Count()</strong></span>
                 <span>
                     Активных:
                     <strong>
@@ -150,16 +320,29 @@
                         r.Status == ReservationStatus.Active)
                 </strong>
             </span>
+            <span>Сумма: <strong>@Model.Reservations.Sum(r => r.TotalCost).ToString("N0") ₽</strong></span>
         </div>
                 }
         else
         {
             <div class="empty-state">
                 <i class="fas fa-calendar-alt"></i>
-                <p>У вас пока нет бронирований</p>
-                <a asp-page="/Reservations/Book" class="btn btn-primary" style="margin-top:12px;">
-                    <i class="fas fa-plus"></i> Забронировать корт
-                </a>
+                <p>
+                    @if (Model.StatusFilter != "All")
+                    {
+                        <span>Нет бронирований с таким статусом</span>
+                    }
+                    else
+                    {
+                        <span>У вас пока нет бронирований</span>
+                    }
+                </p>
+                @if (Model.StatusFilter == "All")
+                {
+                    <a asp-page="/Reservations/Book" class="btn btn-primary" style="margin-top:12px;">
+                        <i class="fas fa-plus"></i> Забронировать корт
+                    </a>
+                }
             </div>
         }
     </div>
@@ -168,7 +351,6 @@
 <script>
     function openModal(id)  { document.getElementById('modal-' + id).classList.add('active'); }
     function closeModal(id) { document.getElementById('modal-' + id).classList.remove('active'); }
-
     document.querySelectorAll('.modal-overlay').forEach(el => {
         el.addEventListener('click', e => { if (e.target === el) el.classList.remove('active'); });
     });

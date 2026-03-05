@@ -23,16 +23,34 @@ namespace TennisReservation.Presentation.Pages.Users
         }
 
         public IEnumerable<UserDto> Users { get; set; } = [];
+        public string SortField { get; set; } = "LastName";
+        public bool SortAsc { get; set; } = true;
 
-        public async Task OnGetAsync()
+        public async Task OnGetAsync(string sortField = "LastName", bool sortAsc = true)
         {
+            SortField = sortField;
+            SortAsc = sortAsc;
 
             try
             {
-                var users = await _getAllUsersHandler.HandleAsync(CancellationToken.None);
-                Users = users.Value ?? new List<UserDto>();
+                var result = await _getAllUsersHandler.HandleAsync(CancellationToken.None);
+                var list = result.Value ?? new List<UserDto>();
 
-                _logger.LogDebug("Загружено {Count} пользователей", Users.Count());
+                Users = (sortField, sortAsc) switch
+                {
+                    ("FirstName", true) => list.OrderBy(u => u.FirstName),
+                    ("FirstName", false) => list.OrderByDescending(u => u.FirstName),
+                    ("LastName", true) => list.OrderBy(u => u.LastName),
+                    ("LastName", false) => list.OrderByDescending(u => u.LastName),
+                    ("Email", true) => list.OrderBy(u => u.Email),
+                    ("Email", false) => list.OrderByDescending(u => u.Email),
+                    ("RegistrationDate", true) => list.OrderBy(u => u.RegistrationDate),
+                    ("RegistrationDate", false) => list.OrderByDescending(u => u.RegistrationDate),
+                    _ => list.OrderBy(u => u.LastName)
+                };
+
+                _logger.LogDebug("Загружено {Count} пользователей, сортировка: {Field} {Dir}",
+                    Users.Count(), sortField, sortAsc ? "ASC" : "DESC");
             }
             catch (Exception ex)
             {

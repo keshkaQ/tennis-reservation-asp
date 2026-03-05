@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TennisReservation.Application.TennisCourts.Commands;
+using TennisReservation.Application.TennisCourts.Queries;
 using TennisReservation.Contracts.TennisCourts.Commands;
 using TennisReservation.Contracts.TennisCourts.DTO;
 using TennisReservation.Contracts.TennisCourts.Queries;
@@ -100,5 +101,30 @@ public class TennisCourtsController : ControllerBase
         }
 
         return NoContent();
+    }
+
+    [HttpGet("availability/{courtId:guid}")]
+    public async Task<IActionResult> GetAvailability(
+    [FromRoute] Guid courtId,
+    [FromQuery] DateTime startTime,
+    [FromQuery] DateTime endTime,
+    [FromServices] GetCourtAvailabilityHandler handler,
+    CancellationToken cancellationToken)
+    {
+        var result = await handler.HandleAsync(courtId, startTime, endTime, cancellationToken);
+        if(result.IsFailure)
+            return BadRequest(new { error = result.Error });
+        return Ok(result.Value);
+    }
+
+    [HttpGet("{courtId:guid}/reservations")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> GetAllCourtReservations(
+    [FromRoute] Guid courtId,
+    [FromServices] GetAllReservationsByCourtIdHandler handler,
+    CancellationToken cancellationToken)
+    {
+        var result = await handler.HandleAsync(courtId, cancellationToken);
+        return Ok(result);
     }
 }

@@ -39,11 +39,71 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Имя</th>
-                        <th>Фамилия</th>
-                        <th>Email</th>
+                        <th>
+                            <a asp-page="./Index"
+                               asp-route-sortField="FirstName"
+                               asp-route-sortAsc="@(Model.SortField == "FirstName" ? (!Model.SortAsc).ToString().ToLower() : "true")">
+                                Имя
+                                @if (Model.SortField == "FirstName")
+                                {
+                                    <span>@(Model.SortAsc ? "▲" : "▼")</span>
+                                }
+                                else
+                                {
+
+                                    <span style="opacity:0.4">⇅</span>
+                                }
+                            </a>
+                        </th>
+                        <th>
+                            <a asp-page="./Index"
+                               asp-route-sortField="LastName"
+                               asp-route-sortAsc="@(Model.SortField == "LastName" ? (!Model.SortAsc).ToString().ToLower() : "true")">
+                                Фамилия
+                                @if (Model.SortField == "LastName")
+                                {
+                                    <span>@(Model.SortAsc ? "▲" : "▼")</span>
+                                }
+                                else
+                                {
+
+                                    <span style="opacity:0.4">⇅</span>
+                                }
+                            </a>
+                        </th>
+                        <th>
+                            <a asp-page="./Index"
+                               asp-route-sortField="Email"
+                               asp-route-sortAsc="@(Model.SortField == "Email" ? (!Model.SortAsc).ToString().ToLower() : "true")">
+                                Email
+                                @if (Model.SortField == "Email")
+                                {
+                                    <span>@(Model.SortAsc ? "▲" : "▼")</span>
+                                }
+                                else
+                                {
+
+                                    <span style="opacity:0.4">⇅</span>
+                                }
+                            </a>
+                        </th>
                         <th>Телефон</th>
-                        <th>Дата регистрации</th>
+                        <th>
+                            <a asp-page="./Index"
+                               asp-route-sortField="RegistrationDate"
+                               asp-route-sortAsc="@(Model.SortField == "RegistrationDate" ? (!Model.SortAsc).ToString().ToLower() : "true")">
+                                Дата регистрации
+                                @if (Model.SortField == "RegistrationDate")
+                                {
+                                    <span>@(Model.SortAsc ? "▲" : "▼")</span>
+                                }
+                                else
+                                {
+
+                                    <span style="opacity:0.4">⇅</span>
+                                }
+                            </a>
+                        </th>
                         <th>Действия</th>
                     </tr>
                 </thead>
@@ -62,7 +122,7 @@
                                     <a asp-page="./ManageCredentials" asp-route-id="@user.UserId" title="Управление доступом" class="btn btn-outline btn-sm">
                                         <i class="fas fa-key"></i>
                                     </a>
-                                    <button class="btn btn-outline-danger btn-sm" onclick="openModal('modal-@user.UserId')"><i class="fas fa-trash"></i></button> 
+                                    <button class="btn btn-outline-danger btn-sm" onclick="openModal('modal-@user.UserId')"><i class="fas fa-trash"></i></button>
                                 </div>
                             </td>
                         </tr>
@@ -103,6 +163,23 @@
         </div>
     </div>
 </div>
+
+<style>
+    thead a {
+        color: inherit;
+        text-decoration: none;
+        white-space: nowrap;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+        thead a:hover {
+            text-decoration: underline;
+            opacity: 0.8;
+        }
+</style>
 
 <script>
     function openModal(id) { document.getElementById(id).classList.add('active'); }

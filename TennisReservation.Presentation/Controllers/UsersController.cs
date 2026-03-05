@@ -1,11 +1,15 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using CSharpFunctionalExtensions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TennisReservation.Application.Auth;
 using TennisReservation.Application.Users.Commands;
+using TennisReservation.Application.Users.Queries;
+using TennisReservation.Contracts.Reservations.DTO;
 using TennisReservation.Contracts.Users.Commands;
 using TennisReservation.Contracts.Users.Dto.TennisReservation.Contracts.Users.Commands;
 using TennisReservation.Contracts.Users.Queries;
 using TennisReservation.Domain.Enums;
+using TennisReservation.Domain.Models;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -39,10 +43,11 @@ public class UsersController : ControllerBase
         [FromServices] GetUserByIdHandler handler,
         CancellationToken cancellationToken)
     {
-        var currentUserId = User.FindFirst("userId")?.Value;
+        var currentUserId = Guid.TryParse(User.FindFirst("userId")?.Value, out var parsedId)
+        ? parsedId : (Guid?)null;
         var isAdmin = User.IsInRole("Admin");
 
-        if (!isAdmin && currentUserId != userId.ToString())
+        if (!isAdmin && userId != currentUserId)
             return Forbid();
 
         var result = await handler.HandleAsync(new GetUserByIdQuery(userId), cancellationToken);
@@ -99,20 +104,21 @@ public class UsersController : ControllerBase
         return CreatedAtAction(nameof(GetUserById), new { userId = result.Value.UserId }, result.Value);
     }
 
-    [HttpPut("{id:guid}")]
+    [HttpPut("{userId:guid}")]
     public async Task<IActionResult> UpdateUser(
-        [FromRoute] Guid id,
+        [FromRoute] Guid userId,
         [FromBody] UpdateUserCommand request,
         [FromServices] UpdateUserHandler handler,
         CancellationToken cancellationToken)
     {
-        var currentUserId = User.FindFirst("userId")?.Value;
+        var currentUserId = Guid.TryParse(User.FindFirst("userId")?.Value, out var parsedId)
+         ? parsedId : (Guid?)null;
         var isAdmin = User.IsInRole("Admin");
 
-        if (!isAdmin && currentUserId != id.ToString())
+        if (!isAdmin && userId != currentUserId)
             return Forbid();
 
-        if (id != request.Id)
+        if (userId != request.Id)
             return BadRequest(new { error = "ID в маршруте не совпадает с ID в теле запроса" });
 
         var result = await handler.HandleAsync(request, cancellationToken);
@@ -300,5 +306,89 @@ public class UsersController : ControllerBase
         }
 
         return Ok();
+    }
+
+    [HttpGet("locked")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> LockedUsers(
+        [FromServices] GetLockedUsersHandler handler,
+        CancellationToken cancellationToken)
+    {
+        var result = await handler.HandleAsync(cancellationToken);
+
+        if (result.IsFailure)
+            return StatusCode(500, new { error = result.Error });
+
+        return Ok(result.Value);
+    }
+
+    [HttpPost("logout")]
+    public IActionResult Logout()
+    {
+        Response.Cookies.Delete("jwt-cookies", new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Strict
+        });
+
+        return Ok();
+    }
+
+    [HttpPut("change-password")]
+    public async Task<IActionResult> ChangeMyPassword(
+        [FromBody] ChangePasswordRequest request,
+        [FromServices] ChangePasswordHandler handler,
+        CancellationToken cancellationToken)
+    {
+        var currentUserId = User.FindFirst("userId")?.Value;
+        var result = await handler.HandleAsync(new ChangePasswordCommand(Guid.Parse(currentUserId), request.NewPassword), cancellationToken);
+
+        if (result.IsFailure)
+        {
+            if (result.Error.Contains("не найден"))
+                return NotFound(new { error = result.Error });
+
+            return BadRequest(new { error = result.Error });
+        }
+        return Ok();
+    }
+
+    [HttpGet("{userId:guid}/reservations")]
+    public async Task<ActionResult<IEnumerable<ReservationListItemDto>>> GetReservationsByUserId(
+    [FromRoute] Guid userId,
+    [FromServices] GetAllReservationsByUserIdHandler handler,
+    CancellationToken cancellationToken)
+    {
+        var currentUserId = Guid.TryParse(User.FindFirst("userId")?.Value, out var parsedId)
+            ? parsedId : (Guid?)null;
+        var isAdmin = User.IsInRole("Admin");
+
+        if (!isAdmin && userId != currentUserId)
+            return Forbid();
+        var reservations = await handler.HandleAsync(userId, cancellationToken);
+        return Ok(reservations);
+    }
+
+     [HttpGet("me")]
+     public async Task<ActionResult<UserWithCredentialsDto>> UserInfo(
+     [FromServices] GetUserWithCredentialsHandler handler,
+     CancellationToken cancellationToken)
+     {
+        var currentUserId = Guid.TryParse(User.FindFirst("userId")?.Value, out var parsedId)
+            ? parsedId : (Guid?)null;
+
+        if (currentUserId is null)
+            return Unauthorized();
+
+        var result = await handler.HandleAsync(new GetUserWithCredentialsByIdQuery(currentUserId.Value), cancellationToken);
+
+        if (result.IsFailure)
+            return StatusCode(500, new { error = result.Error });
+
+        if (result.Value is null)
+            return NotFound();
+
+        return Ok(result.Value);
     }
 }
