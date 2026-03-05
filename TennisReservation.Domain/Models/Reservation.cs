@@ -107,8 +107,8 @@ namespace TennisReservation.Domain.Models
                 return Result.Failure("Время окончания должно быть позже времени начала");
             if ((endTime - startTime).TotalMinutes < 30)
                 return Result.Failure("Минимальная длительность бронирования - 30 минут");
-            if ((endTime - startTime).TotalHours > 24)
-                return Result.Failure("Максимальная длительность бронирования - 24 часа");
+            if ((endTime - startTime).TotalHours > 4)
+                return Result.Failure("Максимальная длительность бронирования - 4 часа");
             return Result.Success();
         }
 

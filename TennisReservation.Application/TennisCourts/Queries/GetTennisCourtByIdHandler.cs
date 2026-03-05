@@ -1,29 +1,38 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using TennisReservation.Application.Database;
 using TennisReservation.Contracts.TennisCourts.DTO;
 using TennisReservation.Contracts.TennisCourts.Queries;
 using TennisReservation.Domain.Models;
 
-namespace TennisReservation.Application.TennisCourts.Queries
+public class GetTennisCourtByIdHandler
 {
-    public class GetTennisCourtByIdHandler
-    {
-        private readonly IReadDbContext _readDbContext;
+    private readonly IReadDbContext _readDbContext;
+    private readonly ILogger<GetTennisCourtByIdHandler> _logger;
 
-        public GetTennisCourtByIdHandler(IReadDbContext readDbContext)
+    public GetTennisCourtByIdHandler(IReadDbContext readDbContext, ILogger<GetTennisCourtByIdHandler> logger)
+    {
+        _readDbContext = readDbContext;
+        _logger = logger;
+    }
+
+    public async Task<TennisCourtDto?> HandleAsync(GetTennisCourtByIdQuery query, CancellationToken cancellationToken)
+    {
+        try
         {
-            _readDbContext = readDbContext;
+            return await _readDbContext.TennisCourtsRead
+                .Where(tc => tc.Id == new TennisCourtId(query.Id))
+                .Select(t => new TennisCourtDto(
+                    t.Id.Value,
+                    t.Name,
+                    t.HourlyRate,
+                    t.Description
+                )).FirstOrDefaultAsync(cancellationToken);
         }
-        public async Task<TennisCourtDto?> HandleAsync(GetTennisCourtByIdQuery query, CancellationToken cancellationToken)
+        catch (Exception ex)
         {
-            return await _readDbContext.TennisCourtsRead.
-                 Where(tc => tc.Id == new TennisCourtId(query.Id))
-                 .Select(t => new TennisCourtDto(
-                     t.Id.Value,
-                     t.Name,
-                     t.HourlyRate,
-                     t.Description
-                 )).FirstOrDefaultAsync(cancellationToken);
+            _logger.LogError(ex, "Ошибка при получении корта {TennisCourtId}", query.Id);
+            return null;
         }
     }
 }

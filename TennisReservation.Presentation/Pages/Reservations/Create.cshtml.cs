@@ -1,11 +1,7 @@
-﻿using CSharpFunctionalExtensions;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using TennisReservation.Application.Reservations.Commands;
-using TennisReservation.Application.TennisCourts.Queries;
-using TennisReservation.Application.Users.Queries;
 using TennisReservation.Contracts.Reservations.Command;
 using TennisReservation.Contracts.TennisCourts.DTO;
 using TennisReservation.Contracts.Users.Dto;
@@ -18,18 +14,15 @@ namespace TennisReservation.Presentation.Pages.Reservations
         private readonly CreateReservationHandler _createReservationHandler;
         private readonly GetAllTennisCourtsHandler _getAllTennisCourtsHandler;
         private readonly GetAllUsersHandler _getAllUsersHandler;
-        private readonly ILogger<CreateModel> _logger;
 
         public CreateModel(
             CreateReservationHandler createReservationHandler,
             GetAllTennisCourtsHandler getAllTennisCourtsHandler,
-            GetAllUsersHandler getAllUsersHandler,
-            ILogger<CreateModel> logger)
+            GetAllUsersHandler getAllUsersHandler)
         {
             _createReservationHandler = createReservationHandler;
             _getAllTennisCourtsHandler = getAllTennisCourtsHandler;
             _getAllUsersHandler = getAllUsersHandler;
-            _logger = logger;
         }
 
         [BindProperty]
@@ -37,7 +30,6 @@ namespace TennisReservation.Presentation.Pages.Reservations
 
         public List<TennisCourtDto> TennisCourts { get; set; } = new();
         public List<UserDto> Users { get; set; } = new();
-
         public string CourtPricesJson { get; set; } = "{}";
 
         private async Task LoadDataAsync()
@@ -73,8 +65,8 @@ namespace TennisReservation.Presentation.Pages.Reservations
             }
 
             if (!double.TryParse(ViewModel.Duration,
-    System.Globalization.NumberStyles.Any,
-    System.Globalization.CultureInfo.InvariantCulture, out var durationHours) || durationHours <= 0)
+                System.Globalization.NumberStyles.Any,
+                System.Globalization.CultureInfo.InvariantCulture, out var durationHours) || durationHours <= 0)
             {
                 TempData["Error"] = "Некорректная длительность";
                 return Page();
@@ -99,46 +91,31 @@ namespace TennisReservation.Presentation.Pages.Reservations
                 TempData["Error"] = "Бронирование не может переходить на следующий день";
                 return Page();
             }
+
             if (!ModelState.IsValid)
             {
                 await LoadDataAsync();
                 return Page();
             }
 
-            try
-            {
-                var command = new CreateReservationCommand(
-                    ViewModel.TennisCourtId,
-                    ViewModel.UserId,
-                    startDateTime,
-                   endDateTime);
+            var command = new CreateReservationCommand(
+                ViewModel.TennisCourtId,
+                ViewModel.UserId,
+                startDateTime,
+                endDateTime);
 
-                var result = await _createReservationHandler.HandleAsync(command, CancellationToken.None);
+            var result = await _createReservationHandler.HandleAsync(command, CancellationToken.None);
 
-                if (result.IsFailure)
-                {
-                    ModelState.AddModelError(string.Empty, result.Error);
-                    TempData["Error"] = "Корт уже забронирован на это время";
-                    await LoadDataAsync();
-                    return Page();
-                }
-
-                TempData["SuccessMessage"] = "Бронирование успешно добавлено";
-                return RedirectToPage("./Index");
-            }
-            catch (DbUpdateException ex)
+            if (result.IsFailure)
             {
-                _logger.LogError(ex, "Ошибка БД при сохранении бронирования");
-                ModelState.AddModelError(string.Empty, "Ошибка при сохранении данных бронирования");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Неожиданная ошибка при создании бронирования");
-                ModelState.AddModelError(string.Empty, "Произошла непредвиденная ошибка");
+                ModelState.AddModelError(string.Empty, result.Error);
+                TempData["Error"] = "Корт уже забронирован на это время";
+                await LoadDataAsync();
+                return Page();
             }
 
-            await LoadDataAsync();
-            return Page();
+            TempData["SuccessMessage"] = "Бронирование успешно добавлено";
+            return RedirectToPage("./Index");
         }
     }
 }

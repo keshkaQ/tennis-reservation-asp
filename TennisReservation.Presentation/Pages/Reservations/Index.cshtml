@@ -83,8 +83,8 @@
                     @foreach (var r in Model.Reservations)
                     {
                         <tr>
-                            <td>@r.User?.FirstName @r.User?.LastName</td>
-                            <td>@r.TennisCourt?.Name</td>
+                            <td>@r.UserFirstName @r.UserLastName</td>
+                            <td>@r.CourtName</td>
                             <td>@r.StartTime.ToString("dd.MM.yyyy HH:mm")</td>
                             <td>@r.EndTime.ToString("dd.MM.yyyy HH:mm")</td>
                             <td><strong>@r.TotalCost.ToString("N0") ₽</strong></td>
@@ -103,16 +103,16 @@
                             </td>
                             <td>
                                 <div class="actions">
-                                    <a asp-page="./Edit" asp-route-id="@r.Id.Value" class="btn btn-outline btn-sm">
+                                    <a asp-page="./Edit" asp-route-id="@r.Id" class="btn btn-outline btn-sm">
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     @if (r.Status != ReservationStatus.Cancelled && r.Status != ReservationStatus.Completed)
                                     {
-                                        <button class="btn btn-outline btn-sm" onclick="openModal('cancel-@r.Id.Value')" title="Отменить">
+                                        <button class="btn btn-outline btn-sm" onclick="openModal('cancel-@r.Id')" title="Отменить">
                                             <i class="fas fa-ban"></i>
                                         </button>
                                     }
-                                    <button class="btn btn-outline-danger btn-sm" onclick="openModal('modal-@r.Id.Value')">
+                                    <button class="btn btn-outline-danger btn-sm" onclick="openModal('modal-@r.Id')">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
@@ -124,17 +124,17 @@
 
             @foreach (var r in Model.Reservations)
             {
-                <div class="modal-overlay" id="modal-@r.Id.Value">
+                <div class="modal-overlay" id="modal-@r.Id">
                     <div class="modal-box">
                         <h5>Подтверждение удаления</h5>
                         <p>Вы хотите удалить бронирование:</p>
-                        <p class="name">@r.User?.FirstName @r.User?.LastName</p>
+                        <p class="name">@r.UserFirstName @r.UserLastName</p>
                         <p>@r.StartTime.ToString("dd.MM.yyyy HH:mm") — @r.EndTime.ToString("HH:mm")</p>
                         <p>Стоимость: @r.TotalCost.ToString("N0") ₽</p>
                         <p class="warn">⚠️ Это действие нельзя отменить!</p>
                         <div class="modal-footer">
-                            <button class="btn btn-outline" onclick="closeModal('modal-@r.Id.Value')">Отмена</button>
-                            <form method="post" asp-page-handler="Delete" asp-route-id="@r.Id.Value" style="margin:0">
+                            <button class="btn btn-outline" onclick="closeModal('modal-@r.Id')">Отмена</button>
+                            <form method="post" asp-page-handler="Delete" asp-route-id="@r.Id" style="margin:0">
                                 <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> Удалить</button>
                             </form>
                         </div>
@@ -143,16 +143,16 @@
 
                 @if (r.Status != ReservationStatus.Cancelled && r.Status != ReservationStatus.Completed)
                 {
-                    <div class="modal-overlay" id="cancel-@r.Id.Value">
+                    <div class="modal-overlay" id="cancel-@r.Id">
                         <div class="modal-box">
                             <h5>Подтверждение отмены</h5>
                             <p>Вы хотите отменить бронирование:</p>
-                            <p class="name">@r.User?.FirstName @r.User?.LastName</p>
+                            <p class="name">@r.UserFirstName @r.UserLastName</p>
                             <p>@r.StartTime.ToString("dd.MM.yyyy HH:mm") — @r.EndTime.ToString("HH:mm")</p>
                             <p>Стоимость: @r.TotalCost.ToString("N0") ₽</p>
                             <div class="modal-footer">
-                                <button class="btn btn-outline" onclick="closeModal('cancel-@r.Id.Value')">Закрыть</button>
-                                <form method="post" asp-page-handler="Cancel" asp-route-id="@r.Id.Value" style="margin:0">
+                                <button class="btn btn-outline" onclick="closeModal('cancel-@r.Id')">Закрыть</button>
+                                <form method="post" asp-page-handler="Cancel" asp-route-id="@r.Id" style="margin:0">
                                     <button type="submit" class="btn btn-danger">
                                         <i class="fas fa-ban"></i> Отменить бронирование
                                     </button>
@@ -175,7 +175,7 @@
         }
 
         <div class="card-footer">
-            <span>Всего: <strong>@Model.Reservations.Count</strong></span>
+            <span>Всего: <strong>@Model.Reservations.Count()</strong></span>
             <span>Общая сумма: <strong>@Model.Reservations.Sum(b => b.TotalCost).ToString("N0") ₽</strong></span>
         </div>
     </div>

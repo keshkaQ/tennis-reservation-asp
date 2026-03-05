@@ -215,6 +215,11 @@ footer {
                         @if (User.Identity?.IsAuthenticated == true)
                         {
                             <li class="nav-item">
+                                <a class="nav-link" asp-area="" asp-page="/Users/MyReservations">
+                                    <i class="fas fa-tasks"></i> Мои бронирования
+                                </a>
+                            </li>
+                            <li class="nav-item">
                                 <span class="nav-link user-pill">
                                     <i class="fas fa-user"></i> @User.Identity.Name
                                 </span>

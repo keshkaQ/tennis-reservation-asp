@@ -2,24 +2,26 @@
 using Microsoft.Extensions.Logging;
 using TennisReservation.Application.Database;
 using TennisReservation.Contracts.Reservations.DTO;
+using TennisReservation.Domain.Models;
 
-public class GetAllReservationsHandler
+public class GetAllReservationsByUserIdHandler
 {
     private readonly IReadDbContext _readDbContext;
-    private readonly ILogger<GetAllReservationsHandler> _logger;
+    private readonly ILogger<GetAllReservationsByUserIdHandler> _logger;
 
-    public GetAllReservationsHandler(IReadDbContext readDbContext, ILogger<GetAllReservationsHandler> logger)
+    public GetAllReservationsByUserIdHandler(IReadDbContext readDbContext, ILogger<GetAllReservationsByUserIdHandler> logger)
     {
         _readDbContext = readDbContext;
         _logger = logger;
     }
 
-    public async Task<IEnumerable<ReservationListItemDto>> HandleAsync(CancellationToken cancellationToken)
+    public async Task<IEnumerable<ReservationListItemDto>> HandleAsync(Guid userId, CancellationToken cancellationToken)
     {
         try
         {
             return await _readDbContext.ReservationsRead
-                .OrderByDescending(r => r.StartTime)
+                .Where(r => r.UserId == new UserId(userId))
+                .OrderBy(s => s.StartTime)
                 .Select(r => new ReservationListItemDto(
                     r.Id.Value,
                     r.TennisCourtId.Value,
@@ -35,7 +37,7 @@ public class GetAllReservationsHandler
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Ошибка при получении всех бронирований");
+            _logger.LogError(ex, "Ошибка при получении бронирований пользователя {UserId}", userId);
             return Enumerable.Empty<ReservationListItemDto>();
         }
     }

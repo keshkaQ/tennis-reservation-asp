@@ -1,11 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using TennisReservation.Application.TennisCourts.Queries;
 using TennisReservation.Application.Reservations.Commands;
+using TennisReservation.Contracts.Reservations.Command;
 using TennisReservation.Contracts.TennisCourts.DTO;
 using TennisReservation.Contracts.TennisCourts.Queries;
-using TennisReservation.Contracts.Reservations.Command;
 
 namespace TennisReservation.Presentation.Pages.Reservations
 {

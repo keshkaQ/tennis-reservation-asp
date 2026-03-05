@@ -1,8 +1,6 @@
 ﻿using CSharpFunctionalExtensions;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using TennisReservation.Contracts.Users.Commands;
-using TennisReservation.Domain.Models;
 
 namespace TennisReservation.Application.Users.Commands
 {

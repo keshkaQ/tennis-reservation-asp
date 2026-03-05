@@ -2,9 +2,6 @@
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Text.Json;
 using TennisReservation.Application.Reservations.Commands;
-using TennisReservation.Application.Reservations.Queries;
-using TennisReservation.Application.TennisCourts.Queries;
-using TennisReservation.Application.Users.Queries;
 using TennisReservation.Contracts.Reservations.Command;
 using TennisReservation.Contracts.Reservations.Queries;
 using TennisReservation.Contracts.TennisCourts.DTO;
@@ -19,20 +16,17 @@ namespace TennisReservation.Presentation.Pages.Reservations
         private readonly GetReservationByIdHandler _getReservationByIdHandler;
         private readonly GetAllTennisCourtsHandler _getAllTennisCourtsHandler;
         private readonly GetAllUsersHandler _getAllUsersHandler;
-        private readonly ILogger<EditModel> _logger;
 
         public EditModel(
             UpdateReservationHandler updateReservationHandler,
             GetReservationByIdHandler getReservationByIdHandler,
             GetAllTennisCourtsHandler getAllTennisCourtsHandler,
-            GetAllUsersHandler getAllUsersHandler,
-            ILogger<EditModel> logger)
+            GetAllUsersHandler getAllUsersHandler)
         {
             _updateReservationHandler = updateReservationHandler;
             _getReservationByIdHandler = getReservationByIdHandler;
             _getAllTennisCourtsHandler = getAllTennisCourtsHandler;
             _getAllUsersHandler = getAllUsersHandler;
-            _logger = logger;
         }
 
         [BindProperty]
@@ -44,36 +38,24 @@ namespace TennisReservation.Presentation.Pages.Reservations
 
         public async Task<IActionResult> OnGetAsync(Guid id)
         {
-            try
+            var reservationResult = await _getReservationByIdHandler.HandleAsync(
+                new GetReservationByIdQuery(id), CancellationToken.None);
+
+            if (reservationResult.IsFailure)
             {
-                // Загружаем бронирование
-                var reservationResult = await _getReservationByIdHandler.HandleAsync(
-                    new GetReservationByIdQuery(id), CancellationToken.None);
-
-                if (reservationResult.IsFailure)
-                {
-                    TempData["ErrorMessage"] = "Бронирование не найдено";
-                    return RedirectToPage("./Index");
-                }
-
-                var reservation = reservationResult.Value;
-
-                // Загружаем списки для выпадающих меню
-                await LoadListsAsync();
-
-                ViewModel.TennisCourtId = reservation.CourtId;
-                ViewModel.UserId = reservation.UserId;
-                ViewModel.StartTime = reservation.StartTime;
-                ViewModel.EndTime = reservation.EndTime;
-
-                return Page();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Ошибка при загрузке бронирования {ReservationId}", id);
-                TempData["ErrorMessage"] = "Ошибка при загрузке данных";
+                TempData["ErrorMessage"] = "Бронирование не найдено";
                 return RedirectToPage("./Index");
             }
+
+            var reservation = reservationResult.Value;
+            await LoadListsAsync();
+
+            ViewModel.TennisCourtId = reservation.CourtId;
+            ViewModel.UserId = reservation.UserId;
+            ViewModel.StartTime = reservation.StartTime;
+            ViewModel.EndTime = reservation.EndTime;
+
+            return Page();
         }
 
         public async Task<IActionResult> OnPostAsync(Guid id)
@@ -86,33 +68,24 @@ namespace TennisReservation.Presentation.Pages.Reservations
                 return Page();
             }
 
-            try
-            {
-                var command = new UpdateReservationCommand(
-                    ViewModel.Id,
-                    ViewModel.TennisCourtId,
-                    ViewModel.UserId,
-                    ViewModel.StartTime,
-                    ViewModel.EndTime);
-                var result = await _updateReservationHandler.HandleAsync(command, CancellationToken.None);
+            var command = new UpdateReservationCommand(
+                ViewModel.Id,
+                ViewModel.TennisCourtId,
+                ViewModel.UserId,
+                ViewModel.StartTime,
+                ViewModel.EndTime);
 
-                if (result.IsFailure)
-                {
-                    ModelState.AddModelError(string.Empty, result.Error);
-                    await LoadListsAsync();
-                    return Page();
-                }
+            var result = await _updateReservationHandler.HandleAsync(command, CancellationToken.None);
 
-                TempData["SuccessMessage"] = "Бронирование успешно обновлено";
-                return RedirectToPage("./Index");
-            }
-            catch (Exception ex)
+            if (result.IsFailure)
             {
-                _logger.LogError(ex, "Ошибка при обновлении бронирования {ReservationId}", id);
-                ModelState.AddModelError(string.Empty, "Ошибка при сохранении данных");
+                ModelState.AddModelError(string.Empty, result.Error);
                 await LoadListsAsync();
                 return Page();
             }
+
+            TempData["SuccessMessage"] = "Бронирование успешно обновлено";
+            return RedirectToPage("./Index");
         }
 
         private async Task LoadListsAsync()
@@ -125,7 +98,6 @@ namespace TennisReservation.Presentation.Pages.Reservations
             var users = await _getAllUsersHandler.HandleAsync(CancellationToken.None);
             Users = users.Value.ToList();
 
-            // Для JavaScript
             var prices = TennisCourts.ToDictionary(c => c.Id.ToString(), c => c.HourlyRate);
             CourtPricesJson = JsonSerializer.Serialize(prices);
         }

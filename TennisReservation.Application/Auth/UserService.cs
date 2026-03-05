@@ -44,38 +44,45 @@ namespace TennisReservation.Application.Auth
 
         public async Task<Result<string>> Login(string email, string password)
         {
-            var credentialsResult = await _credentialsRepository.GetWithUserByEmailAsync(email);
-            if (credentialsResult.IsFailure || credentialsResult.Value == null)
-                return Result.Failure<string>("Неверный email или пароль");
-
-            var credentials = credentialsResult.Value;
-
-            if (!credentials.CanLogin)
-                return Result.Failure<string>($"Аккаунт заблокирован до {credentials.LockedUntil:dd.MM.yyyy HH:mm}");
-
-            var isPasswordValid = _passwordHasher.Verify(password, credentials.PasswordHash);
-            if (!isPasswordValid)
+            try
             {
-                credentials.RecordFailedAttempt();
+                var credentialsResult = await _credentialsRepository.GetWithUserByEmailAsync(email);
+                if (credentialsResult.IsFailure || credentialsResult.Value == null)
+                    return Result.Failure<string>("Неверный email или пароль");
+
+                var credentials = credentialsResult.Value;
+
+                if (!credentials.CanLogin)
+                    return Result.Failure<string>($"Аккаунт заблокирован до {credentials.LockedUntil:dd.MM.yyyy HH:mm}");
+
+                var isPasswordValid = _passwordHasher.Verify(password, credentials.PasswordHash);
+                if (!isPasswordValid)
+                {
+                    credentials.RecordFailedAttempt();
+                    await _credentialsRepository.UpdateAsync(credentials);
+                    var attemptsLeft = 5 - credentials.FailedLoginAttempts;
+                    var message = attemptsLeft > 0
+                        ? $"Неверный пароль. Осталось попыток: {attemptsLeft}"
+                        : $"Аккаунт заблокирован до {credentials.LockedUntil:HH:mm}";
+                    return Result.Failure<string>(message);
+                }
+
+                credentials.RecordSuccessfulLogin();
                 await _credentialsRepository.UpdateAsync(credentials);
 
-                var attemptsLeft = 5 - credentials.FailedLoginAttempts;
-                var message = attemptsLeft > 0
-                    ? $"Неверный пароль. Осталось попыток: {attemptsLeft}"
-                    : $"Аккаунт заблокирован до {credentials.LockedUntil:HH:mm}";
-                return Result.Failure<string>(message);
+                var userDto = new UserLoginDto(
+                    credentials.UserId.Value,
+                    credentials.User.Email,
+                    credentials.Role,
+                    credentials.PasswordHash);
+
+                return Result.Success(_jwtProvider.GenerateToken(userDto));
             }
-
-            credentials.RecordSuccessfulLogin();
-            await _credentialsRepository.UpdateAsync(credentials);
-
-            var userDto = new UserLoginDto(
-                credentials.UserId.Value,
-                credentials.User.Email,
-                credentials.Role,
-                credentials.PasswordHash);
-
-            return Result.Success(_jwtProvider.GenerateToken(userDto));
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Ошибка при входе пользователя {Email}", email);
+                return Result.Failure<string>("Произошла ошибка при входе");
+            }
         }
     }
 }

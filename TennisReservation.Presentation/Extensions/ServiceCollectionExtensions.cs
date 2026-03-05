@@ -4,13 +4,10 @@ using TennisReservation.Application.Database;
 using TennisReservation.Application.Interfaces;
 using TennisReservation.Application.Reservations;
 using TennisReservation.Application.Reservations.Commands;
-using TennisReservation.Application.Reservations.Queries;
 using TennisReservation.Application.TennisCourts;
 using TennisReservation.Application.TennisCourts.Commands;
-using TennisReservation.Application.TennisCourts.Queries;
 using TennisReservation.Application.Users;
 using TennisReservation.Application.Users.Commands;
-using TennisReservation.Application.Users.Queries;
 using TennisReservation.Infrastructure.Postgres;
 using TennisReservation.Infrastructure.Postgres.Repositories;
 using TennisReservation.Infrastructure.Postgres.Seeding;
@@ -99,6 +96,7 @@ namespace TennisReservation.Presentation.Extensions
             services.AddScoped<DeleteReservationHandler>();
             services.AddScoped<CancelReservationHandler>();
             services.AddHostedService<ReservationStatusUpdater>();
+            services.AddScoped<GetAllReservationsByUserIdHandler>();
 
             return services;
         }

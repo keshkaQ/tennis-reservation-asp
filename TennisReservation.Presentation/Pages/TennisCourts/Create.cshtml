@@ -30,7 +30,7 @@
                 </div>
                 <div class="field">
                     <label asp-for="ViewModel.Description">@Html.DisplayNameFor(model => model.ViewModel.Description)</label>
-                    <textarea asp-for="ViewModel.Description" rows="4" placeholder="Введите описание корта (необязательно)"></textarea>
+                    <textarea asp-for="ViewModel.Description" rows="4" placeholder="Введите описание корта"></textarea>
                     <span asp-validation-for="ViewModel.Description" class="text-danger"></span>
                     <div class="field-hint">Максимум 500 символов</div>
                 </div>

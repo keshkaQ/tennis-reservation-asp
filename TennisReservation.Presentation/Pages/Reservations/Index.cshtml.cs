@@ -1,50 +1,53 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
 using TennisReservation.Application.Reservations.Commands;
 using TennisReservation.Contracts.Reservations.Command;
-using TennisReservation.Domain.Models;
-using TennisReservation.Infrastructure.Postgres;
+using TennisReservation.Contracts.Reservations.DTO;
 
 namespace TennisReservation.Presentation.Pages.Reservations
 {
     public class IndexModel : PageModel
     {
-        private readonly TennisReservationDbContext _context;
+        private readonly GetAllReservationsHandler _getAllReservationsHandler;
+        private readonly DeleteReservationHandler _deleteReservationHandler;
         private readonly CancelReservationHandler _cancelReservationHandler;
 
-        public IndexModel(TennisReservationDbContext context, CancelReservationHandler cancelReservationHandler)
+        public IndexModel(GetAllReservationsHandler getAllReservationsHandler,
+             CancelReservationHandler cancelReservationHandler,
+             DeleteReservationHandler deleteReservationHandler)
         {
-            _context = context;
+            _getAllReservationsHandler = getAllReservationsHandler;
             _cancelReservationHandler = cancelReservationHandler;
+            _deleteReservationHandler = deleteReservationHandler;
         }
 
-        public IList<Reservation> Reservations { get; set; } = [];
-
-        public async Task OnGetAsync()
+        public IEnumerable<ReservationListItemDto> Reservations { get; set; } = [];
+        public async Task<IActionResult> OnGetAsync()
         {
-            Reservations = await _context.ReservationsRead
-                .Include(b => b.User)
-                .Include(b => b.TennisCourt)
-                .OrderByDescending(b => b.StartTime)
-                .ToListAsync();
+            Reservations = await _getAllReservationsHandler.HandleAsync(CancellationToken.None);
+            return Page();
         }
 
         public async Task<IActionResult> OnPostDeleteAsync(Guid id)
         {
-            var booking = await _context.Reservations.FindAsync(new ReservationId(id));
-
-            if (booking != null)
+            var currentUserId = Guid.TryParse(User.FindFirst("userId")?.Value, out var parsedId)
+                ? parsedId: (Guid?)null;
+            var isAdmin = User.IsInRole("Admin");
+            var command = new DeleteReservationCommand(id, currentUserId, isAdmin);
+            var reservationResult = await _deleteReservationHandler.HandleAsync(command, CancellationToken.None);
+            if(reservationResult.IsFailure)
             {
-                _context.Reservations.Remove(booking);
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = $"Броинрование успешно удалено";
-            }
-            else
-            {
-                TempData["ErrorMessage"] = "Бронирование не найдено";
+                if (reservationResult.Error.Contains("не найдено"))
+                {
+                    TempData["ErrorMessage"] = "Бронирование не найдено";
+                    return NotFound(new { error = reservationResult.Error });
+                }
+                if (reservationResult.Error.Contains("Нет прав"))
+                    return Forbid();
+                return BadRequest(new { error = reservationResult.Error });
             }
 
+            TempData["SuccessMessage"] = $"Бронирование успешно удалено";
             return RedirectToPage();
         }
 

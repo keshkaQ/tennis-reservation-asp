@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using TennisReservation.Application.TennisCourts.Commands;
-using TennisReservation.Application.TennisCourts.Queries;
 using TennisReservation.Contracts.TennisCourts.Commands;
 using TennisReservation.Contracts.TennisCourts.DTO;
 
