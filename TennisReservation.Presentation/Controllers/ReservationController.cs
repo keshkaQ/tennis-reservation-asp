@@ -1,10 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using TennisReservation.Application.Reservations.Commands;
-using TennisReservation.Application.Reservations.Queries;
-using TennisReservation.Contracts.Reservations.Command;
+using TennisReservation.Application.Reservations.Commands.CancelReservation;
+using TennisReservation.Application.Reservations.Commands.CreateReservation;
+using TennisReservation.Application.Reservations.Commands.DeleteReservation;
+using TennisReservation.Application.Reservations.Commands.UpdateReservation;
+using TennisReservation.Application.Reservations.Queries.GetAllReservationByStatus;
+using TennisReservation.Application.Reservations.Queries.GetAllReservationsByDate;
+using TennisReservation.Application.Reservations.Queries.GetReservationById;
 using TennisReservation.Contracts.Reservations.DTO;
-using TennisReservation.Contracts.Reservations.Queries;
+using TennisReservation.Contracts.Reservations.Requests;
 using TennisReservation.Domain.Enums;
 
 [Route("api/[controller]")]
@@ -52,11 +56,13 @@ public class ReservationController : ControllerBase
 
     [HttpPost]
     public async Task<ActionResult<ReservationDto>> CreateReservation(
-        [FromBody] CreateReservationCommand request,
+        [FromBody] CreateReservationRequest request,
         [FromServices] CreateReservationHandler handler,
         CancellationToken cancellationToken)
     {
-        var result = await handler.HandleAsync(request, cancellationToken);
+        var userId = Guid.Parse(User.FindFirst("userId")?.Value);
+        var command = new CreateReservationCommand(request.TennisCourtId, userId, request.StartTime, request.EndTime);
+        var result = await handler.HandleAsync(command, cancellationToken);
 
         if (result.IsFailure)
             return BadRequest(new { error = result.Error });
@@ -70,26 +76,29 @@ public class ReservationController : ControllerBase
     [HttpPut("{id:guid}")]
     public async Task<ActionResult<ReservationDto>> UpdateReservation(
         [FromRoute] Guid id,
-        [FromBody] UpdateReservationCommand request,
+        [FromBody] UpdateReservationRequest request,
         [FromServices] UpdateReservationHandler handler,
         CancellationToken cancellationToken)
     {
-        var currentUserId = User.FindFirst("userId")?.Value;
+        var currentUserId = Guid.Parse(User.FindFirst("userId")?.Value);
         var isAdmin = User.IsInRole("Admin");
 
-        if (!isAdmin && request.UserId.ToString() != currentUserId)
-            return Forbid();
+        var command = new UpdateReservationCommand(
+            id,
+            request.TennisCourtId,
+            currentUserId,
+            isAdmin,
+            request.StartTime,
+            request.EndTime);
 
-        if (id != request.Id)
-            return BadRequest(new { error = "ID в маршруте не совпадает с ID бронирования" });
-
-        var result = await handler.HandleAsync(request, cancellationToken);
+        var result = await handler.HandleAsync(command, cancellationToken);
 
         if (result.IsFailure)
         {
             if (result.Error.Contains("не найдено"))
                 return NotFound(new { error = result.Error });
-
+            if (result.Error.Contains("Нет прав"))
+                return Forbid();
             return BadRequest(new { error = result.Error });
         }
 

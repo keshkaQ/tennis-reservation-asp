@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using TennisReservation.Application.Reservations.Commands;
-using TennisReservation.Contracts.Reservations.Command;
+using TennisReservation.Application.Reservations.Commands.CancelReservation;
+using TennisReservation.Application.Reservations.Commands.DeleteReservation;
 using TennisReservation.Contracts.Reservations.DTO;
 using TennisReservation.Domain.Enums;
 

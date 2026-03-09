@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using TennisReservation.Application.Users.Commands;
-using TennisReservation.Contracts.Users.Commands;
-using TennisReservation.Contracts.Users.Queries;
+using TennisReservation.Application.Users.Commands.UpdateUser;
+using TennisReservation.Application.Users.Queries.GetUserById;
 using TennisReservation.Presentation.Pages.Users.ViewModels;
 
 namespace TennisReservation.Presentation.Pages.Users
@@ -23,8 +22,7 @@ namespace TennisReservation.Presentation.Pages.Users
 
         public async Task<IActionResult> OnGetAsync(Guid id)
         {
-            var userToUpdateResult = await _getUserByIdHandler.HandleAsync(
-                new GetUserByIdQuery(id), CancellationToken.None);
+            var userToUpdateResult = await _getUserByIdHandler.HandleAsync(new GetUserByIdQuery(id), CancellationToken.None);
 
             if (userToUpdateResult.IsFailure)
                 return NotFound();

@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using TennisReservation.Application.Auth;
-using TennisReservation.Contracts.Users.Commands;
-using TennisReservation.Presentation.Pages.AuthPages.ViewModels;
+using TennisReservation.Application.Users.Auth;
+using TennisReservation.Application.Users.Commands.CreateUser;
 
 namespace TennisReservation.Presentation.Pages.AuthPages
 {
@@ -35,7 +34,7 @@ namespace TennisReservation.Presentation.Pages.AuthPages
 
             try
             {
-                var result = await _userService.Register(new CreateUserCommand(
+                var result = await _userService.Register(new CreateUserWithCredentialsCommand(
                     Input.FirstName,
                     Input.LastName,
                     Input.Email,

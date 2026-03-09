@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using TennisReservation.Application.Users;
-using TennisReservation.Application.Users.Commands;
-using TennisReservation.Contracts.Users.Commands;
+using TennisReservation.Application.Users.Commands.ChangePassword;
+using TennisReservation.Application.Users.Commands.ChangeRole;
+using TennisReservation.Application.Users.Commands.LockUser;
+using TennisReservation.Application.Users.Commands.UnlockUser;
+using TennisReservation.Application.Users.Interfaces;
 using TennisReservation.Domain.Models;
 using TennisReservation.Presentation.Pages.Users.ViewModels;
 

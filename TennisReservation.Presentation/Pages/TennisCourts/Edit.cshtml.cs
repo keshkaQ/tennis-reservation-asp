@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using TennisReservation.Application.TennisCourts.Commands;
-using TennisReservation.Contracts.TennisCourts.Commands;
-using TennisReservation.Contracts.TennisCourts.Queries;
+using TennisReservation.Application.TennisCourts.Commands.UpdateTennisCourt;
+using TennisReservation.Application.TennisCourts.Queries.GetTennisCourtById;
 using TennisReservation.Presentation.Pages.TennisCourts.ViewModels;
 
 namespace TennisReservation.Presentation.Pages.TennisCourts

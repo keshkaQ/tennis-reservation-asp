@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TennisReservation.Infrastructure.Postgres")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4bf9820e22cd213030f5d0cc15ec235eab4d221f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+29f73be3a57c83bdd39bbe5727a62ca2deecb523")]
 [assembly: System.Reflection.AssemblyProductAttribute("TennisReservation.Infrastructure.Postgres")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TennisReservation.Infrastructure.Postgres")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

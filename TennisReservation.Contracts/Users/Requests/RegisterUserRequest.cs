@@ -1,0 +1,13 @@
+﻿namespace TennisReservation.Contracts.Users.Dto
+{
+    namespace TennisReservation.Contracts.Users.Commands
+    {
+        public record RegisterUserRequest(
+            string FirstName,
+            string LastName,
+            string Email,
+            string PhoneNumber,
+            string Password
+        );
+    }
+}

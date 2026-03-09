@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Text.Json;
-using TennisReservation.Application.Reservations.Commands;
-using TennisReservation.Contracts.Reservations.Command;
-using TennisReservation.Contracts.Reservations.Queries;
+using TennisReservation.Application.Reservations.Commands.UpdateReservation;
+using TennisReservation.Application.Reservations.Queries.GetReservationById;
 using TennisReservation.Contracts.TennisCourts.DTO;
 using TennisReservation.Contracts.Users.Dto;
 using TennisReservation.Presentation.Pages.Reservations.ViewModels;
@@ -67,11 +66,14 @@ namespace TennisReservation.Presentation.Pages.Reservations
                 await LoadListsAsync();
                 return Page();
             }
+            var currentUserId = Guid.Parse(User.FindFirst("userId")?.Value);
+            var isAdmin = User.IsInRole("Admin");
 
             var command = new UpdateReservationCommand(
                 ViewModel.Id,
                 ViewModel.TennisCourtId,
-                ViewModel.UserId,
+                currentUserId,
+                isAdmin, 
                 ViewModel.StartTime,
                 ViewModel.EndTime);
 

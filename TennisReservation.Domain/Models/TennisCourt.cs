@@ -7,7 +7,7 @@ namespace TennisReservation.Domain.Models
     public class TennisCourt
     {
         private TennisCourt() { }
-        public TennisCourt(TennisCourtId id, string name, decimal hourlyRate, string description)
+        private TennisCourt(TennisCourtId id, string name, decimal hourlyRate, string description)
         {
             Id = id;
             Name = name;

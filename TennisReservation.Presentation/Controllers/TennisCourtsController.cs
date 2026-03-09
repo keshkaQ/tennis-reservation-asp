@@ -1,10 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using TennisReservation.Application.TennisCourts.Commands;
-using TennisReservation.Application.TennisCourts.Queries;
-using TennisReservation.Contracts.TennisCourts.Commands;
+using TennisReservation.Application.TennisCourts.Commands.CreateTennisCourt;
+using TennisReservation.Application.TennisCourts.Commands.DeleteTennisCourt;
+using TennisReservation.Application.TennisCourts.Commands.UpdateTennisCourt;
+using TennisReservation.Application.TennisCourts.Queries.GetAllReservationsByCourtId;
+using TennisReservation.Application.TennisCourts.Queries.GetCourtAvailability;
+using TennisReservation.Application.TennisCourts.Queries.GetTennisCourtById;
 using TennisReservation.Contracts.TennisCourts.DTO;
-using TennisReservation.Contracts.TennisCourts.Queries;
+using TennisReservation.Contracts.TennisCourts.Requests;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -29,8 +32,7 @@ public class TennisCourtsController : ControllerBase
         [FromServices] GetTennisCourtByIdHandler handler,
         CancellationToken cancellationToken)
     {
-        var result = await handler.HandleAsync(
-            new GetTennisCourtByIdQuery(tennisCourtId), cancellationToken);
+        var result = await handler.HandleAsync(new GetTennisCourtByIdQuery(tennisCourtId), cancellationToken);
 
         if (result == null)
             return NotFound(new { error = $"Корт с ID {tennisCourtId} не найден" });
@@ -41,12 +43,12 @@ public class TennisCourtsController : ControllerBase
     [HttpPost]
     [Authorize(Roles = "Admin")]
     public async Task<ActionResult<TennisCourtDto>> CreateTennisCourt(
-        [FromBody] CreateTennisCourtCommand request,
+        [FromBody] CreateTennisCourtRequest request,
         [FromServices] CreateTennisCourtHandler handler,
         CancellationToken cancellationToken)
     {
-        var result = await handler.HandleAsync(request, cancellationToken);
-
+        var command = new CreateTennisCourtCommand(request.Name, request.HourlyRate, request.Description);
+        var result = await handler.HandleAsync(command, cancellationToken); 
         if (result.IsFailure)
             return BadRequest(new { error = result.Error });
 
@@ -60,15 +62,15 @@ public class TennisCourtsController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<ActionResult<TennisCourtDto>> UpdateTennisCourt(
         [FromRoute] Guid id,
-        [FromBody] UpdateTennisCourtCommand request,
+        [FromBody] UpdateTennisCourtRequest request,
         [FromServices] UpdateTennisCourtHandler handler,
         CancellationToken cancellationToken)
     {
         if (id != request.Id)
             return BadRequest(new { error = "ID в маршруте не совпадает с ID корта" });
 
-        var result = await handler.HandleAsync(request, cancellationToken);
-
+        var command = new UpdateTennisCourtCommand(id, request.Name, request.HourlyRate, request.Description);
+        var result = await handler.HandleAsync(command, cancellationToken);
         if (result.IsFailure)
         {
             if (result.Error.Contains("не найден"))

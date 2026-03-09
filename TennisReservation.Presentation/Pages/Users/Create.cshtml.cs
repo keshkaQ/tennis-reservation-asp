@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using TennisReservation.Application.Users.Commands;
-using TennisReservation.Contracts.Users.Commands;
+using TennisReservation.Application.Users.Commands.CreateUser;
 using TennisReservation.Presentation.Pages.Users.ViewModels;
 
 namespace TennisReservation.Presentation.Pages.Users
@@ -25,7 +24,7 @@ namespace TennisReservation.Presentation.Pages.Users
             if (!ModelState.IsValid)
                 return Page();
 
-            var command = new CreateUserCommand(
+            var command = new CreateUserWithCredentialsCommand(
                 ViewModel.FirstName,
                 ViewModel.LastName,
                 ViewModel.Email,

@@ -1,15 +1,21 @@
-﻿using CSharpFunctionalExtensions;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using TennisReservation.Application.Auth;
-using TennisReservation.Application.Users.Commands;
-using TennisReservation.Application.Users.Queries;
+using TennisReservation.Application.Users.Auth;
+using TennisReservation.Application.Users.Commands.ChangePassword;
+using TennisReservation.Application.Users.Commands.ChangeRole;
+using TennisReservation.Application.Users.Commands.CreateUser;
+using TennisReservation.Application.Users.Commands.DeleteUser;
+using TennisReservation.Application.Users.Commands.LockUser;
+using TennisReservation.Application.Users.Commands.UnlockUser;
+using TennisReservation.Application.Users.Commands.UpdateUser;
+using TennisReservation.Application.Users.Queries.GetLockedUsers;
+using TennisReservation.Application.Users.Queries.GetUserByEmail;
+using TennisReservation.Application.Users.Queries.GetUserById;
+using TennisReservation.Application.Users.Queries.GetUserWithCredentials;
 using TennisReservation.Contracts.Reservations.DTO;
-using TennisReservation.Contracts.Users.Commands;
 using TennisReservation.Contracts.Users.Dto.TennisReservation.Contracts.Users.Commands;
-using TennisReservation.Contracts.Users.Queries;
+using TennisReservation.Contracts.Users.Requests;
 using TennisReservation.Domain.Enums;
-using TennisReservation.Domain.Models;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -80,8 +86,7 @@ public class UsersController : ControllerBase
         [FromServices] GetUserWithCredentialsHandler handler,
         CancellationToken cancellationToken)
     {
-        var result = await handler.HandleAsync(
-            new GetUserWithCredentialsByIdQuery(userId), cancellationToken);
+        var result = await handler.HandleAsync(new GetUserWithCredentialsByIdQuery(userId), cancellationToken);
 
         if (result.IsFailure)
             return NotFound(new { error = result.Error });
@@ -92,7 +97,7 @@ public class UsersController : ControllerBase
     [HttpPost]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> CreateUser(
-        [FromBody] CreateUserCommand request,
+        [FromBody] CreateUserWithCredentialsCommand request,
         [FromServices] CreateUserWithCredentialsHandler handler,
         CancellationToken cancellationToken)
     {
@@ -107,7 +112,7 @@ public class UsersController : ControllerBase
     [HttpPut("{userId:guid}")]
     public async Task<IActionResult> UpdateUser(
         [FromRoute] Guid userId,
-        [FromBody] UpdateUserCommand request,
+        [FromBody] UpdateUserRequest request,
         [FromServices] UpdateUserHandler handler,
         CancellationToken cancellationToken)
     {
@@ -121,7 +126,13 @@ public class UsersController : ControllerBase
         if (userId != request.Id)
             return BadRequest(new { error = "ID в маршруте не совпадает с ID в теле запроса" });
 
-        var result = await handler.HandleAsync(request, cancellationToken);
+        var command = new UpdateUserCommand(request.Id,
+            request.FirstName,
+            request.LastName,
+            request.Email,
+            request.PhoneNumber);
+
+        var result = await handler.HandleAsync(command, cancellationToken);
 
         if (result.IsFailure)
         {
@@ -138,7 +149,7 @@ public class UsersController : ControllerBase
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteUser(
         [FromRoute] Guid id,
-        [FromServices] DeleteUserHandler handler,
+        [FromServices] DeleteUserByIdHandler handler,
         CancellationToken cancellationToken)
     {
         var result = await handler.HandleAsync(new DeleteUserByIdCommand(id), cancellationToken);
@@ -148,7 +159,7 @@ public class UsersController : ControllerBase
             if (result.Error.Contains("не найден"))
                 return NotFound(new { error = result.Error });
 
-            if (result.Error.Contains("активными бронями") || result.Error.Contains("в использовании"))
+            if (result.Error.Contains("активными бронями"))
                 return Conflict(new { error = result.Error });
 
             return BadRequest(new { error = result.Error });
@@ -161,11 +172,11 @@ public class UsersController : ControllerBase
     [AllowAnonymous]
     [HttpPost("register")]
     public async Task<IActionResult> Register(
-        [FromBody] RegisterUserQuery request,
+        [FromBody] RegisterUserRequest request,
         [FromServices] UserService userService,
         CancellationToken cancellationToken)
     {
-        var command = new CreateUserCommand(
+        var command = new CreateUserWithCredentialsCommand(
             request.FirstName,
             request.LastName,
             request.Email,
@@ -177,7 +188,7 @@ public class UsersController : ControllerBase
 
         if (result.IsFailure)
         {
-            if (result.Error.Contains("уже существует") || result.Error.Contains("занят"))
+            if (result.Error.Contains("уже существует"))
                 return Conflict(new { error = result.Error });
 
             return BadRequest(new { error = result.Error });

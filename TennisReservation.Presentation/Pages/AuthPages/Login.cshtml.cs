@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using TennisReservation.Application.Auth;
+using TennisReservation.Application.Users.Auth;
 using TennisReservation.Presentation.Pages.AuthPages.ViewModels;
 
 namespace TennisReservation.Presentation.Pages.AuthPages;

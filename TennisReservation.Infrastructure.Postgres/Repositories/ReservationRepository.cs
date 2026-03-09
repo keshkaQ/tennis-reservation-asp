@@ -1,7 +1,7 @@
 ﻿using CSharpFunctionalExtensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using TennisReservation.Application.Reservations;
+using TennisReservation.Application.Reservations.Interfaces;
 using TennisReservation.Domain.Models;
 
 namespace TennisReservation.Infrastructure.Postgres.Repositories

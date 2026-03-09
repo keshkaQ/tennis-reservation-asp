@@ -1,19 +1,18 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using TennisReservation.Application.Users.Commands;
-using TennisReservation.Contracts.Users.Commands;
+using TennisReservation.Application.Users.Commands.DeleteUser;
 using TennisReservation.Contracts.Users.Dto;
 
 namespace TennisReservation.Presentation.Pages.Users
 {
     public class IndexModel : PageModel
     {
-        private readonly DeleteUserHandler _deleteUserHandler;
+        private readonly DeleteUserByIdHandler _deleteUserHandler;
         private readonly GetAllUsersHandler _getAllUsersHandler;
         private readonly ILogger<IndexModel> _logger;
 
         public IndexModel(
-            DeleteUserHandler deleteUserHandler,
+            DeleteUserByIdHandler deleteUserHandler,
             GetAllUsersHandler getAllUsersHandler,
             ILogger<IndexModel> logger)
         {

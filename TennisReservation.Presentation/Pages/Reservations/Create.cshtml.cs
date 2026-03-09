@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Text.Json;
-using TennisReservation.Application.Reservations.Commands;
-using TennisReservation.Contracts.Reservations.Command;
+using TennisReservation.Application.Reservations.Commands.CreateReservation;
 using TennisReservation.Contracts.TennisCourts.DTO;
 using TennisReservation.Contracts.Users.Dto;
 using TennisReservation.Presentation.Pages.Reservations.ViewModels;
